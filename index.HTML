@@ -1,0 +1,2333 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سیستم جامع مالی و انبارداری (پیمانکاری چندکاربره)</title>
+    <!-- کتابخانه Chart.js برای نمایش نمودارهای حرفه‌ای -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --sidebar-bg: #343a40;
+            --sidebar-color: #ffffff;
+            --card-bg: #ffffff;
+            --primary-color: #007bff;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --info-color: #17a2b8;
+            --sub-menu-bg: #212529;
+            --sub-sub-menu-bg: #1a1d20;
+            --text-color: #212529;
+            --border-color: #dee2e6;
+        }
+
+        body {
+            font-family: Tahoma, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        aside {
+            width: 300px;
+            background-color: var(--sidebar-bg);
+            color: var(--sidebar-color);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        aside h2 {
+            font-size: 18px;
+            text-align: center;
+            margin-bottom: 30px;
+            color: #ffc107;
+        }
+
+        .menu-group {
+            margin-bottom: 6px;
+        }
+
+        .menu-btn {
+            width: 100%;
+            background: transparent;
+            color: var(--sidebar-color);
+            border: none;
+            padding: 10px 15px;
+            text-align: right;
+            font-size: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-family: Tahoma, Arial, sans-serif;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .menu-btn:hover, .menu-btn.active {
+            background-color: var(--primary-color);
+        }
+
+        .submenu {
+            display: none;
+            flex-direction: column;
+            background-color: var(--sub-menu-bg);
+            border-radius: 6px;
+            margin-top: 4px;
+            padding: 4px;
+        }
+
+        .submenu.show {
+            display: flex;
+        }
+
+        .sub-submenu {
+            display: none;
+            flex-direction: column;
+            background-color: var(--sub-sub-menu-bg);
+            border-radius: 4px;
+            margin-top: 4px;
+            padding: 4px;
+        }
+
+        .sub-submenu.show {
+            display: flex;
+        }
+
+        .submenu-btn {
+            width: 100%;
+            background: transparent;
+            color: #adb5bd;
+            border: none;
+            padding: 9px 12px;
+            text-align: right;
+            font-size: 13px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: color 0.2s, background 0.2s;
+            font-family: Tahoma, Arial, sans-serif;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .submenu-btn:hover, .submenu-btn.active {
+            color: #ffffff;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .sub-submenu-btn {
+            background: transparent;
+            color: #94a3b8;
+            border: none;
+            padding: 8px 12px;
+            text-align: right;
+            font-size: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: color 0.2s, background 0.2s;
+            font-family: Tahoma, Arial, sans-serif;
+            width: 100%;
+            display: block;
+        }
+
+        .sub-submenu-btn:hover, .sub-submenu-btn.active {
+            color: #ffffff;
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+        main {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .module-content {
+            display: none;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+        }
+
+        .module-content.active {
+            display: block;
+        }
+
+        h1 {
+            margin-top: 0;
+            font-size: 20px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+            color: #333;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-bottom: 5px;
+            font-size: 12px;
+            font-weight: bold;
+            color: #495057;
+        }
+
+        input, select, textarea {
+            padding: 9px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 13px;
+            outline: none;
+            font-family: Tahoma, Arial, sans-serif;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--primary-color);
+        }
+
+        input:readonly {
+            background-color: #e9ecef;
+            color: #495057;
+            cursor: not-allowed;
+        }
+
+        .action-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: bold;
+            font-family: Tahoma, Arial, sans-serif;
+            color: white;
+            transition: background 0.2s;
+        }
+
+        .btn-submit { background-color: var(--success-color); }
+        .btn-submit:hover { background-color: #218838; }
+        .btn-print { background-color: var(--info-color); }
+        .btn-print:hover { background-color: #138496; }
+        .btn-excel { background-color: #20c997; }
+        .btn-excel:hover { background-color: #17a589; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 13px;
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 9px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f1f3f5;
+            color: #333;
+        }
+
+        .clickable-cell {
+            color: var(--primary-color);
+            cursor: pointer;
+            text-decoration: underline;
+            font-weight: bold;
+        }
+        .clickable-cell:hover {
+            color: #0056b3;
+        }
+
+        .dashboard-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .stat-card {
+            background: #fff;
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            text-align: center;
+        }
+        .stat-card h3 {
+            margin: 0 0 8px 0;
+            font-size: 13px;
+            color: #6c757d;
+        }
+        .stat-card .value {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        .chart-container {
+            position: relative;
+            height: 380px;
+            width: 100%;
+            background: #fff;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .close-modal {
+            color: #aaa;
+            float: left;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close-modal:hover { color: #000; }
+
+        .btn-action {
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            color: white;
+            margin-left: 3px;
+        }
+
+        .btn-edit { background-color: var(--warning-color); color: #333; font-weight: bold; }
+        .btn-delete { background-color: var(--danger-color); }
+
+        .tree-container {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+        .tree-view-panel {
+            width: 380px;
+            border: 1px solid var(--border-color);
+            background: #fff;
+            border-radius: 6px;
+            padding: 10px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .tree-form-panel {
+            flex: 1;
+            background: #fdfdfd;
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            border-radius: 6px;
+        }
+        .tree-node {
+            list-style: none;
+            margin: 4px 0;
+            position: relative;
+            padding-right: 15px;
+        }
+        .tree-node ul {
+            padding-right: 15px;
+            margin: 4px 0;
+            display: none;
+        }
+        .tree-node.open > ul {
+            display: block;
+        }
+        .tree-item-content {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            padding: 4px 6px;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+        .tree-item-content:hover {
+            background-color: #e9ecef;
+        }
+        .toggle-icon {
+            font-weight: bold;
+            width: 15px;
+            text-align: center;
+            color: #6c757d;
+        }
+
+        .rahkaran-layout {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+        .rahkaran-tree-panel {
+            width: 320px;
+            border: 1px solid var(--border-color);
+            background: #fff;
+            border-radius: 6px;
+            padding: 10px;
+            height: 550px;
+            overflow-y: auto;
+        }
+        .rahkaran-grid-panel {
+            flex: 1;
+            background: #fff;
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            border-radius: 6px;
+        }
+        .filter-toolbar {
+            background: #f1f3f5;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        @media print {
+            aside, .action-bar, form, .btn-action, .rahkaran-tree-panel { display: none !important; }
+            main { padding: 0; }
+            .module-content { border: none; box-shadow: none; padding: 0; }
+            table { border: 1px solid #000; }
+            th, td { border: 1px solid #000; color: #000; }
+        }
+    </style>
+</head>
+<body>
+
+    <aside>
+        <h2>سیستم پیمانکاری (چندکاربره)</h2>
+        <div style="background: #212529; padding: 8px; border-radius: 6px; margin-bottom: 15px; font-size: 12px; display: flex; justify-content: space-between; align-items: center;">
+            <span>کاربر: <b id="current-logged-user" style="color: #ffc107;">مدیر سیستم</b></span>
+            <button class="btn-action btn-edit" onclick="showContent('user-management', event)" style="font-size: 10px;">تغییر کاربر / سطح دسترسی</button>
+        </div>
+        
+        <div class="menu-group">
+            <button class="menu-btn active" onclick="showContent('dashboard', event)">داشبورد اصلی</button>
+        </div>
+
+        <div class="menu-group" id="nav-group-financial">
+            <button class="menu-btn" onclick="toggleSubmenu('financial-sub')">
+                <span>ماژول مالی</span><span>▼</span>
+            </button>
+            <div id="financial-sub" class="submenu">
+                <div class="menu-group" style="margin: 0;">
+                    <button class="submenu-btn" onclick="toggleSubmenu('ledger-sub')">
+                        <span>دفتر کل</span><span>▼</span>
+                    </button>
+                    <div id="ledger-sub" class="sub-submenu">
+                        <div class="menu-group" style="margin: 0;">
+                            <button class="sub-submenu-btn" onclick="toggleSubmenu('base-info-sub')" style="display: flex; justify-content: space-between;">
+                                <span>اطلاعات پایه</span><span>▼</span>
+                            </button>
+                            <div id="base-info-sub" class="sub-submenu" style="background-color: #111315;">
+                                <button class="sub-submenu-btn" onclick="showContent('fiscal-year', event)">تعریف سال مالی</button>
+                                <button class="sub-submenu-btn" onclick="showContent('account-structure', event)">ساختار حساب‌ها (درختی)</button>
+                                <button class="sub-submenu-btn" onclick="showContent('bank-accounts', event)">بانک‌ها و حساب‌ها (سطح ۴)</button>
+                                <button class="sub-submenu-btn" onclick="showContent('cheque-books', event)">تعریف دسته چک</button>
+                            </div>
+                        </div>
+                        <div class="menu-group" style="margin: 0; margin-top: 4px;">
+                            <button class="sub-submenu-btn" onclick="toggleSubmenu('accounts-sub')" style="display: flex; justify-content: space-between;">
+                                <span>حساب‌ها</span><span>▼</span>
+                            </button>
+                            <div id="accounts-sub" class="sub-submenu" style="background-color: #111315;">
+                                <button class="sub-submenu-btn" onclick="showContent('persons', event)">تعریف اشخاص</button>
+                                <button class="sub-submenu-btn" onclick="showContent('projects', event)">تعریف پروژه‌ها (پیمانکاری)</button>
+                                <button class="sub-submenu-btn" onclick="showContent('cost-centers', event)">تعریف مراکز هزینه</button>
+                                <button class="sub-submenu-btn" onclick="showContent('personnel', event)">تعریف پرسنل</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="menu-group" style="margin: 0; margin-top: 4px;" id="nav-group-treasury">
+                    <button class="submenu-btn" onclick="toggleSubmenu('treasury-sub')">
+                        <span>دریافت و پرداخت</span><span>▼</span>
+                    </button>
+                    <div id="treasury-sub" class="sub-submenu">
+                        <button class="sub-submenu-btn" onclick="showContent('receive', event)">دریافت (خزانه)</button>
+                        <button class="sub-submenu-btn" onclick="showContent('payment', event)">پرداخت (خزانه)</button>
+                    </div>
+                </div>
+
+                <button class="submenu-btn" onclick="showContent('general-voucher', event)">صدور سند حسابداری عمومی</button>
+                <button class="submenu-btn" onclick="showContent('expense-voucher', event)">صدور سند هزینه‌ها</button>
+                <button class="submenu-btn" onclick="showContent('petty-cash', event)">لیست تنخواه</button>
+                <button class="submenu-btn" onclick="showContent('user-management', event)" style="color: #ffc107;">مدیریت کاربران و دسترسی‌ها</button>
+            </div>
+        </div>
+
+        <div class="menu-group" id="nav-group-warehouse">
+            <button class="menu-btn" onclick="toggleSubmenu('warehouse-sub')">
+                <span>ماژول انبار و فروش</span><span>▼</span>
+            </button>
+            <div id="warehouse-sub" class="submenu">
+                <button class="submenu-btn" onclick="showContent('purchase-receipt', event)">رسید خرید</button>
+                <button class="submenu-btn" onclick="showContent('consumption-issue', event)">حواله مصرف</button>
+                <button class="submenu-btn" onclick="showContent('sales-invoice', event)">صدور فاکتور فروش</button>
+            </div>
+        </div>
+
+        <div class="menu-group" id="nav-group-reports">
+            <button class="menu-btn" onclick="toggleSubmenu('reports-sub')">
+                <span>ماژول گزارشات</span><span>▼</span>
+            </button>
+            <div id="reports-sub" class="submenu">
+                <button class="submenu-btn" onclick="showContent('account-review', event)">مرور حساب‌ها (راهکاران)</button>
+                <button class="submenu-btn" onclick="showContent('custom-project-report', event)">گزارش سفارشی پروژه‌ها (ریزدار)</button>
+                <button class="submenu-btn" onclick="showContent('trial-balance', event)">تراز آزمایشی</button>
+                <button class="submenu-btn" onclick="showContent('project-report', event)">گزارش سود و زیان پروژه‌ها</button>
+                <button class="submenu-btn" onclick="showContent('treasury-report', event)">گزارش صندوق و بانک</button>
+                <button class="submenu-btn" onclick="showContent('warehouse-cardex', event)">کاردکس انبار (کالا)</button>
+            </div>
+        </div>
+    </aside>
+
+    <main>
+        <!-- ماژول مدیریت کاربران و دسترسی‌ها -->
+        <div id="user-management" class="module-content">
+            <h1>مدیریت کاربران و تعیین سطوح دسترسی</h1>
+            <p style="font-size: 13px; color: #666;">در این بخش می‌توانید کاربران جدید تعریف کنید و دسترسی آن‌ها را به ماژول‌های مختلف محدود یا آزاد کنید.</p>
+            
+            <form id="users-form" onsubmit="saveUserEntity(event)">
+                <input type="hidden" id="users-edit-index" value="-1">
+                <div class="form-grid">
+                    <div class="form-group"><label>نام کاربری *</label><input type="text" id="users-username" required></div>
+                    <div class="form-group"><label>نام و نام خانوادگی *</label><input type="text" id="users-fullname" required></div>
+                    <div class="form-group"><label>دسترسی به ماژول مالی</label><select id="users-accessFinancial"><option value="yes">دارد (کامل)</option><option value="no">محدود / ندارد</option></select></div>
+                    <div class="form-group"><label>دسترسی به خزانه (دریافت/پرداخت)</label><select id="users-accessTreasury"><option value="yes">دارد</option><option value="no">ندارد</option></select></div>
+                    <div class="form-group"><label>دسترسی به انبار و فروش</label><select id="users-accessWarehouse"><option value="yes">دارد</option><option value="no">ندارد</option></select></div>
+                    <div class="form-group"><label>دسترسی به گزارشات</label><select id="users-accessReports"><option value="yes">دارد</option><option value="no">ندارد</option></select></div>
+                </div>
+                <button type="submit" class="btn btn-submit">ثبت یا به‌روزرسانی کاربر</button>
+            </form>
+
+            <h3 style="margin-top: 25px; font-size: 14px;">لیست کاربران سیستم و تغییر کاربر فعلی</h3>
+            <table id="users-table">
+                <thead>
+                    <tr>
+                        <th>ردیف</th>
+                        <th>نام کاربری</th>
+                        <th>نام کامل</th>
+                        <th>مالی</th>
+                        <th>خزانه</th>
+                        <th>انبار</th>
+                        <th>گزارشات</th>
+                        <th>ورود با این کاربر</th>
+                        <th>عملیات</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <div id="dashboard" class="module-content active">
+            <h1>داشبورد اصلی و نمای کلی سیستم پیمانکاری</h1>
+            
+            <div class="dashboard-cards">
+                <div class="stat-card">
+                    <h3>تعداد کل پروژه‌ها</h3>
+                    <div class="value" id="dash-project-count">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>مجموع متراژ پروژه‌ها</h3>
+                    <div class="value" id="dash-total-area">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>مجموع مبالغ قرارداد</h3>
+                    <div class="value" id="dash-total-budget">0 ریال</div>
+                </div>
+                <div class="stat-card">
+                    <h3>کل هزینه‌های انجام‌شده</h3>
+                    <div class="value" id="dash-total-expense">0 ریال</div>
+                </div>
+                <div class="stat-card">
+                    <h3>کل مبالغ پرداخت‌شده</h3>
+                    <div class="value" id="dash-total-payment">0 ریال</div>
+                </div>
+                <div class="stat-card">
+                    <h3>مجموع موجودی حساب‌ها</h3>
+                    <div class="value" id="dash-total-bank">0 ریال</div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="mainDashboardChart"></canvas>
+            </div>
+        </div>
+
+        <div id="custom-project-report" class="module-content">
+            <h1>گزارش سفارشی پروژه‌ها (همراه با ریز عملیات)</h1>
+            <p style="font-size: 13px; color: #666;">روی مقادیر ستون‌های «مبلغ قرارداد»، «دریافتی‌ها»، «هزینه‌ها» یا «پرداختی‌ها» کلیک کنید تا ریز اسناد مربوط به آن پروژه را مشاهده کنید.</p>
+            <div class="action-bar"><button class="btn btn-print" onclick="printTable('custom-project-report')">چاپ گزارش</button></div>
+            <table id="custom-project-report-table">
+                <thead>
+                    <tr>
+                        <th>ردیف</th>
+                        <th>نام پروژه / مشخصات</th>
+                        <th>کارفرما</th>
+                        <th>متراژ</th>
+                        <th>فی (ریال)</th>
+                        <th>مبلغ نهایی قرارداد (ریال)</th>
+                        <th>دریافتی‌ها (ریال)</th>
+                        <th>هزینه‌های انجام‌شده (ریال)</th>
+                        <th>پرداختی‌ها (ریال)</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <div id="account-structure" class="module-content">
+            <h1>مدیریت ساختار حساب‌ها (درختواره)</h1>
+            <div class="action-bar">
+                <button class="btn btn-submit" onclick="prepareAddAccount('گروه')">+ گروه حساب جدید</button>
+                <button class="btn btn-submit" onclick="prepareAddAccount('کل')" style="background-color: #17a2b8;">+ حساب کل جدید</button>
+                <button class="btn btn-submit" onclick="prepareAddAccount('معین')" style="background-color: #6f42c1;">+ حساب معین جدید</button>
+                <button class="btn btn-submit" onclick="resetDefaultAccounts()" style="background-color: #dc3545; margin-right: auto;">بازنشانی حساب‌های استاندارد</button>
+            </div>
+            <div class="tree-container">
+                <div class="tree-view-panel">
+                    <div style="font-weight: bold; margin-bottom: 8px; border-bottom: 1px solid #ddd; padding-bottom: 4px;">ساختار حساب‌ها</div>
+                    <ul id="account-tree-root" style="padding: 0; margin: 0;"></ul>
+                </div>
+                <div class="tree-form-panel">
+                    <h3 id="form-panel-title" style="margin-top: 0; font-size: 15px; color: #007bff;">فرم تعریف حساب</h3>
+                    <form id="accountStructures-form" onsubmit="saveAccountEntity(event)">
+                        <input type="hidden" id="accountStructures-edit-id" value="">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>سطح حساب</label>
+                                <select id="accountStructures-level" onchange="onLevelChange()">
+                                    <option value="گروه">گروه حساب</option>
+                                    <option value="کل">حساب کل</option>
+                                    <option value="معین">حساب معین</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="group-parent-wrapper">
+                                <label>گروه والد</label>
+                                <select id="accountStructures-parentGroup"></select>
+                            </div>
+                            <div class="form-group" id="total-parent-wrapper">
+                                <label>کل والد</label>
+                                <select id="accountStructures-parentTotal"></select>
+                            </div>
+                            <div class="form-group">
+                                <label>کد حساب *</label>
+                                <input type="text" id="accountStructures-code" required>
+                            </div>
+                            <div class="form-group">
+                                <label>عنوان حساب *</label>
+                                <input type="text" id="accountStructures-title" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-submit">ذخیره حساب</button>
+                        <button type="button" class="btn btn-delete" onclick="deleteSelectedAccount()" style="margin-right: 5px;">حذف این حساب</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div id="persons" class="module-content">
+            <h1>تعریف اشخاص و شرکت‌ها</h1>
+            <form id="persons-form" onsubmit="saveEntity(event, 'persons')">
+                <input type="hidden" id="persons-edit-index" value="-1">
+                <div class="form-grid">
+                    <div class="form-group"><label>نوع شخصیت *</label><select id="persons-personType" onchange="togglePersonTypeFields()"><option value="حقیقی">شخص حقیقی</option><option value="حقوقی">شرکت / حقوقی</option></select></div>
+                    <div class="form-group"><label>نام و نام خانوادگی / نام شرکت *</label><input type="text" id="persons-name" required></div>
+                    <div class="form-group" id="national-id-group"><label>کد ملی</label><input type="text" id="persons-nationalId"></div>
+                    <div class="form-group" id="economic-id-group" style="display:none;"><label>شناسه ملی / کد اقتصادی</label><input type="text" id="persons-economicId"></div>
+                    <div class="form-group"><label>تلفن همراه *</label><input type="text" id="persons-phone" required></div>
+                    <div class="form-group"><label>آدرس</label><input type="text" id="persons-address"></div>
+                    <div class="form-group"><label>کد سطح ۴ (محدوده ۴۰۰۰-۴۹۹۹) *</label><input type="number" id="persons-level4Code" min="4000" max="4999" required></div>
+                </div>
+                <button type="submit" class="btn btn-submit">ثبت شخص / شرکت</button>
+            </form>
+            <div class="action-bar" style="margin-top:20px;"><button class="btn btn-print" onclick="printTable('persons')">چاپ</button><button class="btn btn-excel" onclick="exportExcel('persons')">خروجی اکسل</button></div>
+            <table id="persons-table"><thead><tr><th>ردیف</th><th>نوع شخصیت</th><th>نام / شرکت</th><th>شناسه/کد ملی</th><th>همراه</th><th>کد سطح ۴</th><th>عملیات</th></tr></thead><tbody></tbody></table>
+        </div>
+
+        <div id="projects" class="module-content">
+            <h1>تعریف پروژه‌های پیمانکاری</h1>
+            <form id="projects-form" onsubmit="saveEntity(event, 'projects')">
+                <input type="hidden" id="projects-edit-index" value="-1">
+                <div class="form-grid">
+                    <div class="form-group"><label>نام پروژه *</label><input type="text" id="projects-name" required></div>
+                    <div class="form-group"><label>کارفرما *</label><input type="text" id="projects-client" required></div>
+                    <div class="form-group"><label>نوع پروژه *</label><input type="text" id="projects-projectType" required></div>
+                    <div class="form-group"><label>نوع قرارداد *</label><select id="projects-contractType"><option value="رسمی">رسمی</option><option value="غیر رسمی">غیر رسمی</option></select></div>
+                    <div class="form-group"><label>متراژ</label><input type="number" id="projects-area" placeholder="0"></div>
+                    <div class="form-group"><label>فی (ریال)</label><input type="number" id="projects-fee" placeholder="0"></div>
+                    <div class="form-group"><label>مبلغ کل قرارداد (ریال) *</label><input type="number" id="projects-budget" required></div>
+                    <div class="form-group"><label>تاریخ شروع</label><input type="text" id="projects-startDate" value="1405/01/01"></div>
+                    <div class="form-group"><label>تاریخ خاتمه</label><input type="text" id="projects-endDate" value="1405/12/29"></div>
+                    <div class="form-group"><label>وضعیت پروژه</label><select id="projects-status"><option>در حال اجرا</option><option>تسویه شده</option><option>تعلیق</option></select></div>
+                    <div class="form-group"><label>کد سطح ۵ (محدوده ۵۰۰۰۰-۵۹۹۹۹) *</label><input type="number" id="projects-level5Code" min="50000" max="59999" required></div>
+                </div>
+                <button type="submit" class="btn btn-submit">ثبت پروژه</button>
+            </form>
+            <div class="action-bar" style="margin-top:20px;"><button class="btn btn-print" onclick="printTable('projects')">چاپ</button><button class="btn btn-excel" onclick="exportExcel('projects')">خروجی اکسل</button></div>
+            <table id="projects-table"><thead><tr><th>ردیف</th><th>نام پروژه</th><th>کارفرما</th><th>نوع</th><th>قرارداد</th><th>مبلغ قرارداد</th><th>تاریخ شروع/پایان</th><th>کد سطح ۵</th><th>عملیات</th></tr></thead><tbody></tbody></table>
+        </div>
+
+        <div id="cost-centers" class="module-content">
+            <h1>تعریف مراکز هزینه</h1>
+            <form id="costCenters-form" onsubmit="saveEntity(event, 'costCenters')">
+                <input type="hidden" id="costCenters-edit-index" value="-1">
+                <div class="form-grid">
+                    <div class="form-group"><label>عنوان مرکز هزینه *</label><input type="text" id="costCenters-title" required></div>
+                    <div class="form-group"><label>نوع مرکز هزینه *</label><select id="costCenters-type"><option value="تولیدی">تولیدی</option><option value="خدماتی">خدماتی</option><option value="اداری">اداری</option></select></div>
+                    <div class="form-group"><label>کد سطح ۴ (محدوده ۶۰۰۰-۶۹۹۹) *</label><input type="number" id="costCenters-level4Code" min="6000" max="6999" required></div>
+                </div>
+                <button type="submit" class="btn btn-submit">ثبت مرکز هزینه</button>
+            </form>
+            <div class="action-bar" style="margin-top:20px;"><button class="btn btn-print" onclick="printTable('costCenters')">چاپ</button><button class="btn btn-excel" onclick="exportExcel('costCenters')">خروجی اکسل</button></div>
+            <table id="costCenters-table"><thead><tr><th>ردیف</th><th>عنوان مرکز هزینه</th><th>نوع</th><th>کد سطح ۴</th><th>عملیات</th></tr></thead><tbody></tbody></table>
+        </div>
+
+        <div id="personnel" class="module-content">
+            <h1>تعریف پرسنل</h1>
+            <form id="personnel-form" onsubmit="saveEntity(event, 'personnel')">
+                <input type="hidden" id="personnel-edit-index" value="-1">
+                <div class="form-grid">
+                    <div class="form-group"><label>نام و نام خانوادگی *</label><input type="text" id="personnel-name" required></div>
+                    <div class="form-group"><label>شماره ملی *</label><input type="text" id="personnel-nationalId" required></div>
+                    <div class="form-group"><label>سمت / عنوان شغلی</label><input type="text" id="personnel-position"></div>
+                    <div class="form-group"><label>مرکز هزینه مرتبط *</label><select id="personnel-costCenter" required></select></div>
+                    <div class="form-group"><label>کد سطح ۴ (محدوده ۷۰۰۰-۷۹۹۹) *</label><input type="number" id="personnel-level4Code" min="7000" max="7999" required></div>
+                </div>
+                <button type="submit" class="btn btn-submit">ثبت پرسنل</button>
+            </form>
+            <div class="action-bar" style="margin-top:20px;"><button class="btn btn-print" onclick="printTable('personnel')">چاپ</button><button class="btn btn-excel" onclick="exportExcel('personnel')">خروجی اکسل</button></div>
+            <table id="personnel-table"><thead><tr><th>ردیف</th><th>نام پرسنل</th><th>شماره ملی</th><th>سمت</th><th>مرکز هزینه</th><th>کد سطح ۴</th><th>عملیات</th></tr></thead><tbody></tbody></table>
+        </div>
+
+        <!-- اسناد دریافت (خزانه) مطابق با قانون معین صندوق/بانک و طرف مقابل -->
+        <div id="receive" class="module-content">
+            <h1>ثبت اسناد دریافت (خزانه)</h1>
+            <form id="receives-form" onsubmit="saveEntity(event, 'receives')">
+                <input type="hidden" id="receives-edit-index" value="-1">
+                <div class="form-grid">
+                    <div class="form-group"><label>شماره سند (اتوماتیک و یکپارچه)</label><input type="text" id="receives-docNo" readonly></div>
+                    <div class="form-group"><label>تاریخ دریافت *</label><input type="text" id="receives-date" value="1405/06/31" required></div>
+                    <div class="form-group">
+                        <label>صندوق یا بانک مقصد (بدهکار) *</label>
+                        <select id="receives-destAccount" required>
+                            <option value="موجودی نقد / صندوق">موجودی نقد / صندوق</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label>طرف مقابل / پرداخت‌کننده *</label><select id="receives-payer" required></select></div>
+                    <div class="form-group">
+                        <label>معین طرف مقابل (بستانکار) *</label>
+                        <select id="receives-counterpartyLedger" required>
+                            <option value="حساب‌های دریافتنی تجاری (کارفرمایان)">حساب‌های دریافتنی تجاری (کارفرمایان)</option>
+                            <option value="پیش‌دریافت از کارفرمایان">پیش‌دریافت از کارفرمایان</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>نوع دریافت *</label>
+                        <select id="receives-payType" onchange="toggleReceiveType()">
+                            <option value="نقدی">نقدی / صندوق</option>
+                            <option value="واریز به بانک">واریز به حساب بانکی</option>
+                            <option value="چک دریافتی">چک دریافتی</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="rec-cheque-group" style="display:none;"><label>شماره چک / صیادی</label><input type="text" id="receives-chequeNo" placeholder="شماره صیادی 16 رقمی"></div>
+                    <div class="form-group" id="rec-duedate-group" style="display:none;"><label>تاریخ سررسید چک</label><input type="text" id="receives-dueDate" value="1405/07/30"></div>
+                    <div class="form-group"><label>مبلغ (ریال) *</label><input type="number" id="receives-amount" required placeholder="0"></div>
+                    <div class="form-group"><label>پروژه مرتبط</label><select id="receives-project"></select></div>
+                    <div class="form-group" style="grid-column: span 2;"><label>شرح سند</label><input type="text" id="receives-desc" placeholder="بابت..."></div>
+                </div>
+                <button type="submit" class="btn btn-submit">ثبت سند دریافت</button>
+            </form>
+            <div class="action-bar" style="margin-top:20px;"><button class="btn btn-print" onclick="printTable('receives')">چاپ</button><button class="btn btn-excel" onclick="exportExcel('receives')">خروجی اکسل</button></div>
+            <table id="receives-table"><thead><tr><th>ردیف</th><th>شماره سند</th><th>تاریخ</th><th>صندوق/بانک مقصد</th><th>طرف مقابل</th><th>معین</th><th>مبلغ (ریال)</th><th>پروژه</th><th>شرح</th><th>عملیات</th></tr></thead><tbody></tbody></table>
+        </div>
+
+        <!-- اسناد پرداخت (خزانه) مطابق با قانون بانک بستانکار و طرف مقابل بدهکار -->
+        <div id="payment" class="module-content">
+            <h1>ثبت اسناد پرداخت (خزانه)</h1>
+            <form id="payments-form" onsubmit="saveEntity(event, 'payments')">
+                <input type="hidden" id="payments-edit-index" value="-1">
+                <div class="form-grid">
+                    <div class="form-group"><label>شماره سند (اتوماتیک و یکپارچه)</label><input type="text" id="payments-docNo" readonly></div>
+                    <div class="form-group"><label>تاریخ پرداخت *</label><input type="text" id="payments-date" value="1405/06/31" required></div>
+                    <div class="form-group">
+                        <label>صندوق یا بانک مبدا (بستانکار) *</label>
+                        <select id="payments-sourceAccount" required>
+                            <option value="موجودی نقد / صندوق">موجودی نقد / صندوق</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label>طرف مقابل / دریافت‌کننده *</label><select id="payments-receiver" required></select></div>
+                    <div class="form-group">
+                        <label>معین طرف مقابل (بدهکار) *</label>
+                        <select id="payments-counterpartyLedger" required>
+                            <option value="حساب‌های پرداختنی تجاری (تامین‌کنندگان)">حساب‌های پرداختنی تجاری (تامین‌کنندگان)</option>
+                            <option value="هزینه حقوق و دستمزد کارگاه">هزینه حقوق و دستمزد کارگاه</option>
+                            <option value="هزینه مصالح مصرفی پروژه‌ها">هزینه مصالح مصرفی پروژه‌ها</option>
+                            <option value="هزینه کرایه ماشین‌آلات و تجهیزات">هزینه کرایه ماشین‌آلات و تجهیزات</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>نوع پرداخت *</label>
+                        <select id="payments-payType" onchange="togglePaymentType()">
+                            <option value="نقدی">پرداخت نقدی / تنخواه</option>
+                            <option value="حواله بانکی">حواله بانکی / پایا</option>
+                            <option value="چک پرداختی">صدور چک</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="pay-cheque-group" style="display:none;"><label>شماره چک پرداختی</label><input type="text" id="payments-chequeNo" placeholder="شماره چک"></div>
+                    <div class="form-group"><label>مبلغ (ریال) *</label><input type="number" id="payments-amount" required placeholder="0"></div>
+                    <div class="form-group"><label>پروژه مرتبط *</label><select id="payments-costCenter" required></select></div>
+                    <div class="form-group" style="grid-column: span 2;"><label>شرح سند</label><input type="text" id="payments-desc" placeholder="بابت..."></div>
+                </div>
+                <button type="submit" class="btn btn-submit">ثبت سند پرداخت</button>
+            </form>
+            <div class="action-bar" style="margin-top:20px;"><button class="btn btn-print" onclick="printTable('payments')">چاپ</button><button class="btn btn-excel" onclick="exportExcel('payments')">خروجی اکسل</button></div>
+            <table id="payments-table"><thead><tr><th>ردیف</th><th>شماره سند</th><th>تاریخ</th><th>صندوق/بانک مبدا</th><th>دریافت‌کننده</th><th>معین بدهکار</th><th>مبلغ (ریال)</th><th>پروژه</th><th>شرح</th><th>عملیات</th></tr></thead><tbody></tbody></table>
+        </div>
+
+        <div id="general-voucher" class="module-content">
+            <h1>صدور سند حسابداری عمومی (استاندارد)</h1>
+            <form id="generalVouchers-form" onsubmit="saveGeneralVoucher(event)">
+                <input type="hidden" id="generalVouchers-edit-index" value="-1">
+                <div class="form-grid">
+                    <div class="form-group"><label>شماره سند (اتوماتیک و یکپارچه)</label><input type="text" id="generalVouchers-no" readonly></div>
+                    <div class="form-group"><label>تاریخ سند *</label><input type="text" id="generalVouchers-date" value="1405/06/31" required></div>
+                    <div class="form-group" style="grid-column: span 2;"><label>شرح کلی سند *</label><input type="text" id="generalVouchers-desc" required placeholder="شرح کلی بابت رویداد مالی..."></div>
+                </div>
+
+                <h3 style="font-size: 14px; margin-top: 15px; border-bottom: 1px solid #ddd; padding-bottom: 5px;">اقلام سند (سطر‌های بدهکار و بستانکار)</h3>
+                <div class="action-bar">
+                    <button type="button" class="btn btn-submit" onclick="addVoucherRow()" style="background-color: #6f42c1;">+ افزودن سطر جدید</button>
+                </div>
+                
+                <table id="voucher-items-table">
+                    <thead>
+                        <tr>
+                            <th>ردیف</th>
+                            <th>حساب معین *</th>
+                            <th>پروژه / مرکز هزینه</th>
+                            <th>شرح سطر</th>
+                            <th>بدهکار (ریال)</th>
+                            <th>بستانکار (ریال)</th>
+                            <th>عملیات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="voucher-items-tbody"></tbody>
+                </table>
+                
+                <div style="display: flex; justify-content: space-between; margin-top: 15px; background: #e9ecef; padding: 10px; border-radius: 6px; font-weight: bold;">
+                    <div>جمع بدهکار: <span id="total-debit">0</span> ریال</div>
+                    <div>جمع بستانکار: <span id="total-credit">0</span> ریال</div>
+                    <div>وضعیت تراز: <span id="balance-status" style="color: red;">نامتعادل</span></div>
+                </div>
+
+                <button type="submit" class="btn btn-submit" style="margin-top: 15px;">ثبت نهایی سند حسابداری</button>
+            </form>
+            <div class="action-bar" style="margin-top:20px;"><button class="btn btn-print" onclick="printTable('generalVouchers')">چاپ</button><button class="btn btn-excel" onclick="exportExcel('generalVouchers')">خروجی اکسل</button></div>
+            <table id="generalVouchers-table"><thead><tr><th>ردیف</th><th>شماره سند</th><th>تاریخ</th><th>شرح کلی</th><th>جمع مبلغ</th><th>عملیات</th></tr></thead><tbody></tbody></table>
+        </div>
+
+        <div id="expense-voucher" class="module-content">
+            <h1>صدور سند هزینه</h1>
+            <form id="expenseVouchers-form" onsubmit="saveEntity(event, 'expenseVouchers')">
+                <input type="hidden" id="expenseVouchers-edit-index" value="-1">
+                <div class="form-grid">
+                    <div class="form-group"><label>شماره سند (اتوماتیک و یکپارچه)</label><input type="text" id="expenseVouchers-no" readonly></div>
+                    <div class="form-group"><label>تاریخ هزینه *</label><input type="text" id="expenseVouchers-date" value="1405/06/31" required></div>
+                    <div class="form-group">
+                        <label>نوع هزینه *</label>
+                        <select id="expenseVouchers-type" required>
+                            <option value="هزینه حقوق و دستمزد کارگاه">هزینه حقوق و دستمزد کارگاه</option>
+                            <option value="هزینه مصالح مصرفی">هزینه مصالح مصرفی</option>
+                            <option value="هزینه کرایه ماشین‌آلات">هزینه کرایه ماشین‌آلات</option>
+                            <option value="هزینه‌های بالاسری و اداری">هزینه‌های بالاسری و اداری</option>
+                            <option value="سایر هزینه‌های متفرقه">سایر هزینه‌های متفرقه</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label>پروژه مرتبط *</label><select id="expenseVouchers-project" required></select></div>
+                    <div class="form-group"><label>طرف مقابل (تأمین‌کننده / شخص) *</label><select id="expenseVouchers-counterparty" required></select></div>
+                    <div class="form-group"><label>مبلغ هزینه (ریال) *</label><input type="number" id="expenseVouchers-amount" required placeholder="0"></div>
+                    <div class="form-group" style="grid-column: span 2;"><label>شرح و توضیحات *</label><input type="text" id="expenseVouchers-desc" required placeholder="شرح کامل بابت هزینه..."></div>
+                </div>
+                <button type="submit" class="btn btn-submit">ثبت سند هزینه</button>
+            </form>
+            <div class="action-bar" style="margin-top:20px;"><button class="btn btn-print" onclick="printTable('expenseVouchers')">چاپ</button><button class="btn btn-excel" onclick="exportExcel('expenseVouchers')">خروجی اکسل</button></div>
+            <table id="expenseVouchers-table"><thead><tr><th>ردیف</th><th>شماره سند</th><th>تاریخ</th><th>نوع هزینه</th><th>پروژه</th><th>طرف مقابل</th><th>مبلغ (ریال)</th><th>شرح</th><th>عملیات</th></tr></thead><tbody></tbody></table>
+        </div>
+
+        <div id="sales-invoice" class="module-content">
+            <h1>صدور فاکتور فروش</h1>
+            <form id="salesInvoices-form" onsubmit="saveSalesInvoice(event)">
+                <input type="hidden" id="salesInvoices-edit-index" value="-1">
+                <div class="form-grid">
+                    <div class="form-group"><label>شماره فاکتور (اتوماتیک)</label><input type="text" id="salesInvoices-invoiceNo" readonly></div>
+                    <div class="form-group"><label>تاریخ فاکتور *</label><input type="text" id="salesInvoices-date" value="1405/06/31" required></div>
+                    <div class="form-group"><label>مشتری / خریدار *</label><select id="salesInvoices-customer" required></select></div>
+                    <div class="form-group"><label>پروژه مرتبط</label><select id="salesInvoices-project"></select></div>
+                </div>
+
+                <h3 style="font-size: 14px; margin-top: 15px; border-bottom: 1px solid #ddd; padding-bottom: 5px;">اقلام فاکتور فروش</h3>
+                <div class="action-bar">
+                    <button type="button" class="btn btn-submit" onclick="addSalesRow()" style="background-color: #20c997;">+ افزودن کالا / خدمات</button>
+                </div>
+                
+                <table id="sales-items-table">
+                    <thead>
+                        <tr>
+                            <th>ردیف</th>
+                            <th>شرح کالا / خدمات *</th>
+                            <th>تعداد *</th>
+                            <th>فی (ریال) *</th>
+                            <th>مبلغ کل (ریال)</th>
+                            <th>عملیات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sales-items-tbody"></tbody>
+                </table>
+                
+                <div style="display: flex; justify-content: flex-end; margin-top: 15px; background: #e9ecef; padding: 12px; border-radius: 6px; font-weight: bold; font-size: 14px;">
+                    <div>جمع کل قابل پرداخت فاکتور: <span id="sales-total-amount">0</span> ریال</div>
+                </div>
+
+                <button type="submit" class="btn btn-submit" style="margin-top: 15px;">ثبت نهایی فاکتور فروش</button>
+            </form>
+            <div class="action-bar" style="margin-top:20px;"><button class="btn btn-print" onclick="printTable('salesInvoices')">چاپ</button><button class="btn btn-excel" onclick="exportExcel('salesInvoices')">خروجی اکسل</button></div>
+            <table id="salesInvoices-table"><thead><tr><th>ردیف</th><th>شماره فاکتور</th><th>تاریخ</th><th>مشتری</th><th>پروژه</th><th>مبلغ کل (ریال)</th><th>عملیات</th></tr></thead><tbody></tbody></table>
+        </div>
+
+        <div id="account-review" class="module-content">
+            <h1>مرور حساب‌ها (به سبک راهکاران)</h1>
+            
+            <div class="filter-toolbar">
+                <div class="form-group"><label>از دوره مالی</label><select><option>1405</option></select></div>
+                <div class="form-group"><label>تا دوره مالی</label><select><option>1405</option></select></div>
+                <div class="form-group"><label>از ماه</label>
+                    <select id="filter-from-month">
+                        <option value="01">فروردین</option><option value="02">اردیبهشت</option><option value="03">خرداد</option><option value="04">تیر</option><option value="05">مرداد</option><option value="06">مهر</option><option value="07">شهریور</option><option value="08">آبان</option><option value="09">آذر</option><option value="10">دی</option><option value="11">بهمن</option><option value="12">اسفند</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>تا ماه</label>
+                    <select id="filter-to-month">
+                        <option value="01">فروردین</option><option value="02">اردیبهشت</option><option value="03">خرداد</option><option value="04">تیر</option><option value="05">مرداد</option><option value="06" selected>مهر</option><option value="07">شهریور</option><option value="08">آبان</option><option value="09">آذر</option><option value="10">دی</option><option value="11">بهمن</option><option value="12">اسفند</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>نوع سند</label><select><option value="all">همه اسناد</option></select></div>
+                <div class="form-group"><label>وضعیت سند</label><select><option value="normal">تایید شده</option></select></div>
+                <div class="form-group"><button class="btn btn-submit" onclick="applyRahkaranFilter()" style="margin-top: 18px;">اعمال فیلتر و به‌روزرسانی</button></div>
+            </div>
+
+            <div class="rahkaran-layout">
+                <div class="rahkaran-tree-panel">
+                    <div style="font-weight: bold; margin-bottom: 8px; border-bottom: 1px solid #ddd; padding-bottom: 4px; font-size: 13px; color: #007bff;">انتخاب حساب (درختواره)</div>
+                    <ul id="rahkaran-tree-root" style="padding: 0; margin: 0;"></ul>
+                </div>
+
+                <div class="rahkaran-grid-panel">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <span id="selected-account-label" style="font-weight: bold; color: #333; font-size: 14px;">حساب انتخابی: کل سیستم / پروژه‌ها</span>
+                        <button class="btn btn-print" onclick="printTable('account-review')">چاپ گزارش</button>
+                    </div>
+                    <table id="rahkaran-review-table">
+                        <thead>
+                            <tr>
+                                <th rowspan="2" style="vertical-align: middle;">ردیف</th>
+                                <th rowspan="2" style="vertical-align: middle;">عنوان حساب / پروژه / شرح</th>
+                                <th rowspan="2" style="vertical-align: middle;">کد معین</th>
+                                <th colspan="2">گردش دوره</th>
+                                <th colspan="2">مانده تا پایان دوره</th>
+                            </tr>
+                            <tr>
+                                <th>گردش بدهکار</th>
+                                <th>گردش بستانکار</th>
+                                <th>مانده بدهکار</th>
+                                <th>مانده بستانکار</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rahkaran-review-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="trial-balance" class="module-content">
+            <h1>تراز آزمایشی سیستم</h1>
+            <div class="action-bar"><button class="btn btn-print" onclick="printTable('trial-balance')">چاپ</button></div>
+            <table id="trial-balance-table"><thead><tr><th>ردیف</th><th>ماژول / بخش مالی</th><th>تعداد اسناد</th><th>مجموع مبلغ (ریال)</th></tr></thead><tbody></tbody></table>
+        </div>
+
+        <div id="project-report" class="module-content">
+            <h1>گزارش جامع سود و زیان و عملکرد پروژه‌های پیمانکاری</h1>
+            <div class="action-bar"><button class="btn btn-print" onclick="printTable('project-report')">چاپ</button></div>
+            <table id="project-report-table">
+                <thead>
+                    <tr>
+                        <th>ردیف</th>
+                        <th>نام پروژه</th>
+                        <th>کارفرما</th>
+                        <th>مبلغ کل قرارداد (ریال)</th>
+                        <th>مجموع هزینه‌های ثبت‌شده (ریال)</th>
+                        <th>سود / زیان ناخالص (ریال)</th>
+                        <th>وضعیت</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <!-- گزارش موجودی تفکیکی صندوق و بانک همراه با قابلیت کلیک برای مشاهده ریز اسناد -->
+        <div id="treasury-report" class="module-content">
+            <h1>گزارش گردش صندوق و بانک (تفکیکی و تعاملی)</h1>
+            <p style="font-size: 13px; color: #666;">روی نام هر صندوق یا بانک کلیک کنید تا ریز تراکنش‌های مربوط به آن را مشاهده کنید.</p>
+            <div class="action-bar"><button class="btn btn-print" onclick="printTable('treasury-report')">چاپ</button></div>
+            <table id="treasury-report-table">
+                <thead>
+                    <tr>
+                        <th>ردیف</th>
+                        <th>نوع حساب (صندوق / بانک)</th>
+                        <th>عنوان / نام بانک (سطح ۴)</th>
+                        <th>کل واریز / دریافت (بدهکار)</th>
+                        <th>کل برداشت / پرداخت (بستانکار)</th>
+                        <th>موجودی نهایی (ریال)</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <div id="warehouse-cardex" class="module-content">
+            <h1>کاردکس انبار (کالاها و مصالح)</h1>
+            <div class="action-bar"><button class="btn btn-print" onclick="printTable('warehouse-cardex')">چاپ</button></div>
+            <table id="warehouse-cardex-table"><thead><tr><th>ردیف</th><th>نوع گردش</th><th>شرح کالا</th><th>تعداد</th><th>مرتبط با</th></tr></thead><tbody></tbody></table>
+        </div>
+
+        <div id="fiscal-year" class="module-content">
+            <h1>تعریف سال مالی</h1>
+            <form id="fiscalYears-form" onsubmit="saveEntity(event, 'fiscalYears')">
+                <input type="hidden" id="fiscalYears-edit-index" value="-1">
+                <div class="form-grid">
+                    <div class="form-group"><label>عنوان سال مالی</label><input type="text" id="fiscalYears-title" required></div>
+                    <div class="form-group"><label>تاریخ شروع</label><input type="text" id="fiscalYears-start" value="1405/01/01"></div>
+                    <div class="form-group"><label>تاریخ پایان</label><input type="text" id="fiscalYears-end" value="1405/12/29"></div>
+                </div>
+                <button type="submit" class="btn btn-submit">ذخیره سال مالی</button>
+            </form>
+            <div class="action-bar" style="margin-top:20px;"><button class="btn btn-print" onclick="printTable('fiscalYears')">چاپ</button><button class="btn btn-excel" onclick="exportExcel('fiscalYears')">خروجی اکسل</button></div>
+            <table id="fiscalYears-table"><thead><tr><th>ردیف</th><th>عنوان</th><th>شروع</th><th>پایان</th><th>عملیات</th></tr></thead><tbody></tbody></table>
+        </div>
+
+        <div id="bank-accounts" class="module-content">
+            <h1>بانک‌ها و حساب‌ها (سطح ۴)</h1>
+            <form id="bankAccounts-form" onsubmit="saveEntity(event, 'bankAccounts')">
+                <input type="hidden" id="bankAccounts-edit-index" value="-1">
+                <div class="form-grid">
+                    <div class="form-group"><label>نام بانک (سطح ۴)</label><input type="text" id="bankAccounts-bankName" required placeholder="مثال: بانک ملی شعبه مرکزی"></div>
+                    <div class="form-group"><label>شماره حساب</label><input type="text" id="bankAccounts-accountNo" required></div>
+                    <div class="form-group"><label>شماره شبا</label><input type="text" id="bankAccounts-sheba"></div>
+                </div>
+                <button type="submit" class="btn btn-submit">ثبت حساب بانکی</button>
+            </form>
+            <div class="action-bar" style="margin-top:20px;"><button class="btn btn-print" onclick="printTable('bankAccounts')">چاپ</button><button class="btn btn-excel" onclick="exportExcel('bankAccounts')">خروجی اکسل</button></div>
+            <table id="bankAccounts-table"><thead><tr><th>ردیف</th><th>بانک (سطح ۴)</th><th>حساب</th><th>شبا</th><th>عملیات</th></tr></thead><tbody></tbody></table>
+        </div>
+
+        <div id="cheque-books" class="module-content">
+            <h1>تعریف دسته چک</h1>
+            <form id="chequeBooks-form" onsubmit="saveEntity(event, 'chequeBooks')">
+                <input type="hidden" id="chequeBooks-edit-index" value="-1">
+                <div class="form-grid">
+                    <div class="form-group"><label>بانک</label><input type="text" id="chequeBooks-bank" required></div>
+                    <div class="form-group"><label>شروع چک</label><input type="number" id="chequeBooks-startNo" required></div>
+                    <div class="form-group"><label>تعداد</label><input type="number" id="chequeBooks-count" required></div>
+                    <div class="form-group"><label>شناسه صیادی</label><input type="text" id="chequeBooks-sayadStart" required></div>
+                </div>
+                <button type="submit" class="btn btn-submit">ثبت دسته چک</button>
+            </form>
+            <div class="action-bar" style="margin-top:20px;"><button class="btn btn-print" onclick="printTable('chequeBooks')">چاپ</button><button class="btn btn-excel" onclick="exportExcel('chequeBooks')">خروجی اکسل</button></div>
+            <table id="chequeBooks-table"><thead><tr><th>ردیف</th><th>بانک</th><th>شروع چک</th><th>تعداد</th><th>شناسه صیادی</th><th>عملیات</th></tr></thead><tbody></tbody></table>
+        </div>
+
+        <div id="petty-cash" class="module-content">
+            <h1>تنخواه</h1>
+            <form id="pettyCashes-form" onsubmit="saveEntity(event, 'pettyCashes')">
+                <input type="hidden" id="pettyCashes-edit-index" value="-1">
+                <div class="form-grid">
+                    <div class="form-group"><label>تنخواه دار</label><input type="text" id="pettyCashes-holder" required></div>
+                    <div class="form-group"><label>مبلغ</label><input type="number" id="pettyCashes-amount" required></div>
+                    <div class="form-group"><label>تاریخ</label><input type="text" id="pettyCashes-date" value="1405/06/31"></div>
+                </div>
+                <button type="submit" class="btn btn-submit">ثبت</button>
+            </form>
+            <div class="action-bar" style="margin-top:20px;"><button class="btn btn-print" onclick="printTable('pettyCashes')">چاپ</button><button class="btn btn-excel" onclick="exportExcel('pettyCashes')">خروجی اکسل</button></div>
+            <table id="pettyCashes-table"><thead><tr><th>ردیف</th><th>تنخواه دار</th><th>مبلغ</th><th>تاریخ</th><th>عملیات</th></tr></thead><tbody></tbody></table>
+        </div>
+
+        <div id="purchase-receipt" class="module-content">
+            <h1>رسید خرید انبار</h1>
+            <form id="purchases-form" onsubmit="saveEntity(event, 'purchases')">
+                <input type="hidden" id="purchases-edit-index" value="-1">
+                <div class="form-grid">
+                    <div class="form-group"><label>تامین‌کننده</label><input type="text" id="purchases-supplier" required></div>
+                    <div class="form-group"><label>کالا</label><input type="text" id="purchases-item" required></div>
+                    <div class="form-group"><label>تعداد</label><input type="number" id="purchases-qty" required></div>
+                    <div class="form-group"><label>فی</label><input type="number" id="purchases-price" required></div>
+                </div>
+                <button type="submit" class="btn btn-submit">ثبت</button>
+            </form>
+            <div class="action-bar" style="margin-top:20px;"><button class="btn btn-print" onclick="printTable('purchases')">چاپ</button><button class="btn btn-excel" onclick="exportExcel('purchases')">خروجی اکسل</button></div>
+            <table id="purchases-table"><thead><tr><th>ردیف</th><th>تامین‌کننده</th><th>کالا</th><th>تعداد</th><th>فی</th><th>عملیات</th></tr></thead><tbody></tbody></table>
+        </div>
+
+        <div id="consumption-issue" class="module-content">
+            <h1>حواله مصرف</h1>
+            <form id="consumptions-form" onsubmit="saveEntity(event, 'consumptions')">
+                <input type="hidden" id="consumptions-edit-index" value="-1">
+                <div class="form-grid">
+                    <div class="form-group"><label>بخش</label><input type="text" id="consumptions-dept" required></div>
+                    <div class="form-group"><label>کالا</label><input type="text" id="consumptions-item" required></div>
+                    <div class="form-group"><label>تعداد</label><input type="number" id="consumptions-qty" required></div>
+                </div>
+                <button type="submit" class="btn btn-submit">ثبت</button>
+            </form>
+            <div class="action-bar" style="margin-top:20px;"><button class="btn btn-print" onclick="printTable('consumptions')">چاپ</button><button class="btn btn-excel" onclick="exportExcel('consumptions')">خروجی اکسل</button></div>
+            <table id="consumptions-table"><thead><tr><th>ردیف</th><th>بخش</th><th>کالا</th><th>تعداد</th><th>عملیات</th></tr></thead><tbody></tbody></table>
+        </div>
+    </main>
+
+    <div id="detailModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <h2 id="modal-title" style="font-size: 16px; margin-top: 0; color: #007bff; border-bottom: 1px solid #ddd; padding-bottom: 8px;">ریز جزئیات</h2>
+            <div id="modal-body" style="overflow-x: auto; max-height: 400px;"></div>
+        </div>
+    </div>
+
+    <script>
+        function toggleSubmenu(id) { document.getElementById(id).classList.toggle('show'); }
+
+        let mainChartInstance = null;
+
+        const defaultStandardAccounts = [
+            { level: 'گروه', code: '1', title: 'دارایی‌های جاری', parentGroup: '', parentTotal: '' },
+            { level: 'کل', code: '11', title: 'موجودی نقد و بانک', parentGroup: 'دارایی‌های جاری', parentTotal: '' },
+            { level: 'معین', code: '1101', title: 'موجودی صندوق', parentGroup: 'دارایی‌های جاری', parentTotal: 'موجودی نقد و بانک' },
+            { level: 'معین', code: '1102', title: 'موجودی بانک‌ها', parentGroup: 'دارایی‌های جاری', parentTotal: 'موجودی نقد و بانک' },
+            { level: 'کل', code: '12', title: 'حساب‌ها و اسناد دریافتنی', parentGroup: 'دارایی‌های جاری', parentTotal: '' },
+            { level: 'معین', code: '1201', title: 'حساب‌های دریافتنی تجاری (کارفرمایان)', parentGroup: 'دارایی‌های جاری', parentTotal: 'حساب‌ها و اسناد دریافتنی' },
+            { level: 'معین', code: '1202', title: 'اسناد دریافتنی (چک‌های دریافتی)', parentGroup: 'دارایی‌های جاری', parentTotal: 'حساب‌ها و اسناد دریافتنی' },
+            { level: 'کل', code: '13', title: 'موجودی مواد و کالا (انبار)', parentGroup: 'دارایی‌های جاری', parentTotal: '' },
+            { level: 'معین', code: '1301', title: 'موجودی مصالح و لوازم پای کار', parentGroup: 'دارایی‌های جاری', parentTotal: 'موجودی مواد و کالا (انبار)' },
+
+            { level: 'گروه', code: '2', title: 'بدهی‌های جاری', parentGroup: '', parentTotal: '' },
+            { level: 'کل', code: '21', title: 'حساب‌ها و اسناد پرداختنی', parentGroup: 'بدهی‌های جاری', parentTotal: '' },
+            { level: 'معین', code: '2101', title: 'حساب‌های پرداختنی تجاری (تامین‌کنندگان)', parentGroup: 'بدهی‌های جاری', parentTotal: 'حساب‌ها و اسناد پرداختنی' },
+            { level: 'معین', code: '2102', title: 'اسناد پرداختنی (چک‌های صادرشده)', parentGroup: 'بدهی‌های جاری', parentTotal: 'حساب‌ها و اسناد پرداختنی' },
+            { level: 'کل', code: '22', title: 'پیش‌دریافت‌ها و کسورات قانونی', parentGroup: 'بدهی‌های جاری', parentTotal: '' },
+            { level: 'معین', code: '2201', title: 'پیش‌دریافت از کارفرمایان', parentGroup: 'بدهی‌های جاری', parentTotal: 'پیش‌دریافت‌ها و کسورات قانونی' },
+
+            { level: 'گروه', code: '3', title: 'حقوق صاحبان سهام', parentGroup: '', parentTotal: '' },
+            { level: 'کل', code: '31', title: 'سرمایه و سود انباشته', parentGroup: 'حقوق صاحبان سهام', parentTotal: '' },
+            { level: 'معین', code: '3101', title: 'سرمایه ثبت‌شده', parentGroup: 'حقوق صاحبان سهام', parentTotal: 'سرمایه و سود انباشته' },
+
+            { level: 'گروه', code: '4', title: 'درآمدهای عملیاتی و متفرقه', parentGroup: '', parentTotal: '' },
+            { level: 'کل', code: '41', title: 'درآمد قراردادهای پیمانکاری', parentGroup: 'درآمدهای عملیاتی و متفرقه', parentTotal: '' },
+            { level: 'معین', code: '4101', title: 'صورت‌وضعیت‌های تاییدشده کارفرما', parentGroup: 'درآمدهای عملیاتی و متفرقه', parentTotal: 'درآمد قراردادهای پیمانکاری' },
+
+            { level: 'گروه', code: '5', title: 'هزینه‌های پروژه‌ها و کارگاه', parentGroup: '', parentTotal: '' },
+            { level: 'کل', code: '51', title: 'هزینه‌های عملیاتی کارگاه', parentGroup: 'هزینه‌های پروژه‌ها و کارگاه', parentTotal: '' },
+            { level: 'معین', code: '5101', title: 'هزینه حقوق و دستمزد کارگاه', parentGroup: 'هزینه‌های پروژه‌ها و کارگاه', parentTotal: 'هزینه‌های عملیاتی کارگاه' },
+            { level: 'معین', code: '5102', title: 'هزینه مصالح مصرفی پروژه‌ها', parentGroup: 'هزینه‌های پروژه‌ها و کارگاه', parentTotal: 'هزینه‌های عملیاتی کارگاه' },
+            { level: 'معین', code: '5103', title: 'هزینه کرایه ماشین‌آلات و تجهیزات', parentGroup: 'هزینه‌های پروژه‌ها و کارگاه', parentTotal: 'هزینه‌های عملیاتی کارگاه' }
+        ];
+
+        const defaultUsers = [
+            { username: 'admin', fullname: 'مدیر سیستم', accessFinancial: 'yes', accessTreasury: 'yes', accessWarehouse: 'yes', accessReports: 'yes' }
+        ];
+
+        function initDefaultDataIfNeeded() {
+            if(!localStorage.getItem('accountStructures')) {
+                localStorage.setItem('accountStructures', JSON.stringify(defaultStandardAccounts));
+            }
+            if(!localStorage.getItem('users')) {
+                localStorage.setItem('users', JSON.stringify(defaultUsers));
+            }
+            if(!localStorage.getItem('currentUser')) {
+                localStorage.setItem('currentUser', JSON.stringify(defaultUsers[0]));
+            }
+        }
+        initDefaultDataIfNeeded();
+
+        function resetDefaultAccounts() {
+            if(confirm('آیا مایلید ساختار حساب‌ها به حالت استاندارد حسابداری پیمانکاری بازنشانی شود؟')) {
+                localStorage.setItem('accountStructures', JSON.stringify(defaultStandardAccounts));
+                initAccountTreeModule();
+                alert('حساب‌های استاندارد با موفقیت بارگذاری شد.');
+            }
+        }
+
+        function getCurrentUser() {
+            return JSON.parse(localStorage.getItem('currentUser')) || defaultUsers[0];
+        }
+
+        function applyUserPermissions() {
+            const user = getCurrentUser();
+            document.getElementById('current-logged-user').innerText = user.fullname + ` (${user.username})`;
+        }
+
+        function showContent(id, event) {
+            if(event) event.stopPropagation();
+            document.querySelectorAll('.module-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.submenu-btn, .sub-submenu-btn').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.menu-btn').forEach(el => { if(!el.getAttribute('onclick').includes('toggleSubmenu')) el.classList.remove('active'); });
+            
+            const targetEl = document.getElementById(id);
+            if(targetEl) targetEl.classList.add('active');
+            if(event && event.currentTarget) event.currentTarget.classList.add('active');
+
+            if(id === 'dashboard') initDashboard();
+            if(id === 'account-structure') initAccountTreeModule();
+            if(id === 'personnel') populateCostCenterDropdown();
+            if(id === 'receive') { populateReceiveDropdowns(); updateGlobalDocNoField('receives-docNo'); }
+            if(id === 'payment') { populatePaymentDropdowns(); updateGlobalDocNoField('payments-docNo'); }
+            if(id === 'general-voucher') { initGeneralVoucherForm(); updateGlobalDocNoField('generalVouchers-no'); }
+            if(id === 'expense-voucher') { populateExpenseDropdowns(); updateGlobalDocNoField('expenseVouchers-no'); }
+            if(id === 'sales-invoice') { initSalesInvoiceForm(); }
+            if(id === 'user-management') renderTable('users');
+            
+            if(id === 'account-review') initRahkaranReview();
+            if(id === 'custom-project-report') renderCustomProjectReport();
+            if(id === 'trial-balance') renderTrialBalance();
+            if(id === 'project-report') renderProjectReport();
+            if(id === 'treasury-report') renderTreasuryReport();
+            if(id === 'warehouse-cardex') renderWarehouseCardex();
+        }
+
+        const modulesConfig = {
+            'users': ['username', 'fullname', 'accessFinancial', 'accessTreasury', 'accessWarehouse', 'accessReports'],
+            'persons': ['personType', 'name', 'nationalId', 'phone', 'address', 'level4Code'],
+            'projects': ['name', 'client', 'projectType', 'contractType', 'area', 'fee', 'budget', 'startDate', 'endDate', 'status', 'level5Code'],
+            'costCenters': ['title', 'type', 'level4Code'],
+            'personnel': ['name', 'nationalId', 'position', 'costCenter', 'level4Code'],
+            'fiscalYears': ['title', 'start', 'end'],
+            'bankAccounts': ['bankName', 'accountNo', 'sheba'],
+            'chequeBooks': ['bank', 'startNo', 'count', 'sayadStart'],
+            'receives': ['docNo', 'date', 'destAccount', 'payer', 'counterpartyLedger', 'amount', 'project', 'desc'],
+            'payments': ['docNo', 'date', 'sourceAccount', 'receiver', 'counterpartyLedger', 'amount', 'costCenter', 'desc'],
+            'expenseVouchers': ['no', 'date', 'type', 'project', 'counterparty', 'amount', 'desc'],
+            'pettyCashes': ['holder', 'amount', 'date'],
+            'purchases': ['supplier', 'item', 'qty', 'price'],
+            'consumptions': ['dept', 'item', 'qty']
+        };
+
+        function getData(key) { return JSON.parse(localStorage.getItem(key)) || []; }
+        function saveData(key, data) { localStorage.setItem(key, JSON.stringify(data)); }
+
+        function initDashboard() {
+            const projects = getData('projects');
+            const expenses = getData('expenseVouchers');
+            const receives = getData('receives');
+            const payments = getData('payments');
+
+            const totalProjects = projects.length;
+            const totalArea = projects.reduce((sum, p) => sum + parseFloat(p.area || 0), 0);
+            const totalBudget = projects.reduce((sum, p) => sum + parseFloat(p.budget || 0), 0);
+            const totalExpense = expenses.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
+            const totalPayment = payments.reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
+            
+            const totalReceiveAmount = receives.reduce((sum, r) => sum + parseFloat(r.amount || 0), 0);
+            const totalBankBalance = totalReceiveAmount - totalPayment;
+
+            document.getElementById('dash-project-count').innerText = totalProjects.toLocaleString();
+            document.getElementById('dash-total-area').innerText = totalArea.toLocaleString();
+            document.getElementById('dash-total-budget').innerText = totalBudget.toLocaleString() + ' ریال';
+            document.getElementById('dash-total-expense').innerText = totalExpense.toLocaleString() + ' ریال';
+            document.getElementById('dash-total-payment').innerText = totalPayment.toLocaleString() + ' ریال';
+            document.getElementById('dash-total-bank').innerText = totalBankBalance.toLocaleString() + ' ریال';
+
+            const ctx = document.getElementById('mainDashboardChart').getContext('2d');
+            if(mainChartInstance) mainChartInstance.destroy();
+
+            mainChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['تعداد پروژه‌ها', 'مجموع متراژ', 'مبلغ قراردادها', 'کل هزینه‌ها', 'کل پرداخت‌شده', 'موجودی حساب‌ها'],
+                    datasets: [{
+                        label: 'شاخص‌های کلیدی عملکرد سیستم',
+                        data: [totalProjects, totalArea, totalBudget, totalExpense, totalPayment, totalBankBalance],
+                        backgroundColor: [
+                            'rgba(0, 123, 255, 0.7)',
+                            'rgba(40, 167, 69, 0.7)',
+                            'rgba(23, 162, 184, 0.7)',
+                            'rgba(220, 53, 69, 0.7)',
+                            'rgba(108, 117, 125, 0.7)',
+                            'rgba(255, 193, 7, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(0, 123, 255, 1)',
+                            'rgba(40, 167, 69, 1)',
+                            'rgba(23, 162, 184, 1)',
+                            'rgba(220, 53, 69, 1)',
+                            'rgba(108, 117, 125, 1)',
+                            'rgba(255, 193, 7, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, ticks: { font: { family: 'Tahoma', size: 11 } } },
+                        x: { ticks: { font: { family: 'Tahoma', size: 11 } } }
+                    },
+                    plugins: { legend: { labels: { font: { family: 'Tahoma', size: 12 } } } }
+                }
+            });
+        }
+
+        function getNextGlobalDocNumber() {
+            const recs = getData('receives');
+            const pays = getData('payments');
+            const gvs = getData('generalVouchers');
+            const expvs = getData('expenseVouchers');
+            const sales = getData('salesInvoices');
+
+            let maxNo = 0;
+            recs.forEach(i => { let n = parseInt(i.docNo || 0); if(n > maxNo) maxNo = n; });
+            pays.forEach(i => { let n = parseInt(i.docNo || 0); if(n > maxNo) maxNo = n; });
+            gvs.forEach(i => { let n = parseInt(i.no || 0); if(n > maxNo) maxNo = n; });
+            expvs.forEach(i => { let n = parseInt(i.no || 0); if(n > maxNo) maxNo = n; });
+            sales.forEach(i => { let n = parseInt(i.invoiceNo || 0); if(n > maxNo) maxNo = n; });
+
+            return maxNo + 1;
+        }
+
+        function updateGlobalDocNoField(inputId) {
+            const input = document.getElementById(inputId);
+            if(input) input.value = getNextGlobalDocNumber();
+        }
+
+        function initAccountTreeModule() {
+            renderTreeStructure();
+            populateDropdownsForTree();
+        }
+
+        function renderTreeStructure() {
+            const accounts = getData('accountStructures');
+            const rootUl = document.getElementById('account-tree-root');
+            rootUl.innerHTML = '';
+            const groups = accounts.filter(a => a.level === 'گروه');
+            if(groups.length === 0) {
+                rootUl.innerHTML = '<li style="padding:10px; color:#888; font-size:12px;">حسابی تعریف نشده است.</li>';
+                return;
+            }
+            groups.forEach(group => {
+                const totals = accounts.filter(a => a.level === 'کل' && a.parentGroup === group.title);
+                let groupLi = document.createElement('li');
+                groupLi.className = 'tree-node open';
+                let groupContent = document.createElement('div');
+                groupContent.className = 'tree-item-content';
+                groupContent.innerHTML = `<span class="toggle-icon" onclick="toggleTreeNode(this, event)">[-]</span> 📁 <b>${group.code}</b> - ${group.title}`;
+                groupContent.onclick = (e) => { if(e.target.className !== 'toggle-icon') selectAccountForEdit(group); };
+                groupLi.appendChild(groupContent);
+
+                if(totals.length > 0) {
+                    let totalUl = document.createElement('ul');
+                    totals.forEach(total => {
+                        const details = accounts.filter(a => a.level === 'معین' && a.parentTotal === total.title);
+                        let totalLi = document.createElement('li');
+                        totalLi.className = 'tree-node open';
+                        let totalContent = document.createElement('div');
+                        totalContent.className = 'tree-item-content';
+                        totalContent.innerHTML = `<span class="toggle-icon" onclick="toggleTreeNode(this, event)">[-]</span> 📂 <b>${total.code}</b> - ${total.title}`;
+                        totalContent.onclick = (e) => { if(e.target.className !== 'toggle-icon') selectAccountForEdit(total); };
+                        totalLi.appendChild(totalContent);
+
+                        if(details.length > 0) {
+                            let detailUl = document.createElement('ul');
+                            details.forEach(detail => {
+                                let detailLi = document.createElement('li');
+                                detailLi.className = 'tree-node';
+                                let detailContent = document.createElement('div');
+                                detailContent.className = 'tree-item-content';
+                                detailContent.innerHTML = `📄 <b>${detail.code}</b> - ${detail.title}`;
+                                detailContent.onclick = () => selectAccountForEdit(detail);
+                                detailLi.appendChild(detailContent);
+                                detailUl.appendChild(detailLi);
+                            });
+                            totalLi.appendChild(detailUl);
+                        }
+                        totalUl.appendChild(totalLi);
+                    });
+                    groupLi.appendChild(totalUl);
+                }
+                rootUl.appendChild(groupLi);
+            });
+        }
+
+        function toggleTreeNode(iconEl, event) {
+            event.stopPropagation();
+            const node = iconEl.closest('.tree-node');
+            node.classList.toggle('open');
+            iconEl.innerText = node.classList.contains('open') ? '[-]' : '[+]';
+        }
+
+        function populateDropdownsForTree() {
+            const accounts = getData('accountStructures');
+            const groupSelect = document.getElementById('accountStructures-parentGroup');
+            const totalSelect = document.getElementById('accountStructures-parentTotal');
+            groupSelect.innerHTML = '';
+            totalSelect.innerHTML = '';
+            accounts.filter(a => a.level === 'گروه').forEach(g => {
+                groupSelect.innerHTML += `<option value="${g.title}">${g.code} - ${g.title}</option>`;
+            });
+            accounts.filter(a => a.level === 'کل').forEach(t => {
+                totalSelect.innerHTML += `<option value="${t.title}">${t.code} - ${t.title}</option>`;
+            });
+            onLevelChange();
+        }
+
+        function onLevelChange() {
+            const level = document.getElementById('accountStructures-level').value;
+            const groupWrapper = document.getElementById('group-parent-wrapper');
+            const totalWrapper = document.getElementById('total-parent-wrapper');
+            if(level === 'گروه') {
+                groupWrapper.style.display = 'none';
+                totalWrapper.style.display = 'none';
+            } else if(level === 'کل') {
+                groupWrapper.style.display = 'flex';
+                totalWrapper.style.display = 'none';
+            } else if(level === 'معین') {
+                groupWrapper.style.display = 'flex';
+                totalWrapper.style.display = 'flex';
+            }
+        }
+
+        function prepareAddAccount(level) {
+            document.getElementById('accountStructures-form').reset();
+            document.getElementById('accountStructures-edit-id').value = '';
+            document.getElementById('accountStructures-level').value = level;
+            document.getElementById('form-panel-title').innerText = `افزودن ${level} جدید`;
+            onLevelChange();
+        }
+
+        function selectAccountForEdit(account) {
+            document.getElementById('accountStructures-edit-id').value = account.code;
+            document.getElementById('accountStructures-level').value = account.level;
+            document.getElementById('accountStructures-code').value = account.code;
+            document.getElementById('accountStructures-title').value = account.title;
+            document.getElementById('form-panel-title').innerText = `ویرایش حساب: ${account.title}`;
+            onLevelChange();
+            if(account.parentGroup) document.getElementById('accountStructures-parentGroup').value = account.parentGroup;
+            if(account.parentTotal) document.getElementById('accountStructures-parentTotal').value = account.parentTotal;
+        }
+
+        function saveAccountEntity(event) {
+            event.preventDefault();
+            const editId = document.getElementById('accountStructures-edit-id').value;
+            const level = document.getElementById('accountStructures-level').value;
+            const code = document.getElementById('accountStructures-code').value;
+            const title = document.getElementById('accountStructures-title').value;
+            const parentGroup = document.getElementById('accountStructures-parentGroup').value;
+            const parentTotal = document.getElementById('accountStructures-parentTotal').value;
+            let accounts = getData('accountStructures');
+
+            if(editId) {
+                let index = accounts.findIndex(a => a.code === editId);
+                if(index !== -1) accounts[index] = { level, code, title, parentGroup, parentTotal };
+            } else {
+                if(accounts.some(a => a.code === code)) { alert('کد حساب تکراری است.'); return; }
+                accounts.push({ level, code, title, parentGroup, parentTotal });
+            }
+            saveData('accountStructures', accounts);
+            initAccountTreeModule();
+            alert('حساب با موفقیت ذخیره شد.');
+        }
+
+        function deleteSelectedAccount() {
+            const editId = document.getElementById('accountStructures-edit-id').value;
+            if(!editId) { alert('لطفاً حسابی را از درخت انتخاب کنید.'); return; }
+            if(confirm('آیا از حذف این حساب اطمینان دارید؟')) {
+                let accounts = getData('accountStructures');
+                accounts = accounts.filter(a => a.code !== editId);
+                saveData('accountStructures', accounts);
+                document.getElementById('accountStructures-form').reset();
+                initAccountTreeModule();
+                alert('حساب حذف شد.');
+            }
+        }
+
+        function initSalesInvoiceForm() {
+            document.getElementById('salesInvoices-edit-index').value = '-1';
+            document.getElementById('salesInvoices-form').reset();
+            updateGlobalDocNoField('salesInvoices-invoiceNo');
+            
+            const custSelect = document.getElementById('salesInvoices-customer');
+            custSelect.innerHTML = '';
+            getData('persons').forEach(p => custSelect.innerHTML += `<option value="${p.name}">${p.name} (${p.personType})</option>`);
+
+            const projSelect = document.getElementById('salesInvoices-project');
+            projSelect.innerHTML = '<option value="-">بدون پروژه</option>';
+            getData('projects').forEach(pr => projSelect.innerHTML += `<option value="${pr.name}">${pr.name}</option>`);
+
+            document.getElementById('sales-items-tbody').innerHTML = '';
+            addSalesRow();
+            calculateSalesTotal();
+            renderTable('salesInvoices');
+        }
+
+        function addSalesRow(rowObj = null) {
+            const tbody = document.getElementById('sales-items-tbody');
+            const rowCount = tbody.rows.length + 1;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${rowCount}</td>
+                <td><input type="text" class="s-desc" value="${rowObj ? rowObj.desc : ''}" required style="width:90%"></td>
+                <td><input type="number" class="s-qty" value="${rowObj ? rowObj.qty : 1}" min="1" oninput="calculateRowTotal(this)" required style="width:80%"></td>
+                <td><input type="number" class="s-price" value="${rowObj ? rowObj.price : 0}" min="0" oninput="calculateRowTotal(this)" required style="width:85%"></td>
+                <td><input type="text" class="s-row-total" value="${rowObj ? rowObj.rowTotal : 0}" readonly style="width:85%; background:#e9ecef;"></td>
+                <td><button type="button" class="btn-action btn-delete" onclick="removeSalesRow(this)">حذف</button></td>
+            `;
+            tbody.appendChild(tr);
+            if(rowObj) calculateRowTotal(tr.querySelector('.s-qty'));
+            else calculateSalesTotal();
+        }
+
+        function calculateRowTotal(input) {
+            const tr = input.closest('tr');
+            const qty = parseFloat(tr.querySelector('.s-qty').value) || 0;
+            const price = parseFloat(tr.querySelector('.s-price').value) || 0;
+            tr.querySelector('.s-row-total').value = qty * price;
+            calculateSalesTotal();
+        }
+
+        function calculateSalesTotal() {
+            let totalAmount = 0;
+            document.querySelectorAll('.s-row-total').forEach(inp => totalAmount += parseFloat(inp.value || 0));
+            document.getElementById('sales-total-amount').innerText = totalAmount.toLocaleString();
+        }
+
+        function removeSalesRow(btn) {
+            const tbody = document.getElementById('sales-items-tbody');
+            if(tbody.rows.length <= 1) { alert('فاکتور فروش باید حداقل دارای یک سطر باشد.'); return; }
+            btn.closest('tr').remove();
+            Array.from(tbody.rows).forEach((row, idx) => row.cells[0].innerText = idx + 1);
+            calculateSalesTotal();
+        }
+
+        function saveSalesInvoice(event) {
+            event.preventDefault();
+            let totalAmount = 0;
+            document.querySelectorAll('.s-row-total').forEach(inp => totalAmount += parseFloat(inp.value || 0));
+            if(totalAmount <= 0) { alert('مبلغ کل فاکتور فروش نمی‌تواند صفر یا منفی باشد.'); return; }
+
+            const editIndexInput = document.getElementById('salesInvoices-edit-index');
+            const editIndex = parseInt(editIndexInput.value);
+            const invoiceNo = document.getElementById('salesInvoices-invoiceNo').value;
+            const date = document.getElementById('salesInvoices-date').value;
+            const customer = document.getElementById('salesInvoices-customer').value;
+            const project = document.getElementById('salesInvoices-project').value;
+
+            let items = [];
+            document.querySelectorAll('#sales-items-tbody tr').forEach(tr => {
+                items.push({
+                    desc: tr.querySelector('.s-desc').value,
+                    qty: parseFloat(tr.querySelector('.s-qty').value || 0),
+                    price: parseFloat(tr.querySelector('.s-price').value || 0),
+                    rowTotal: parseFloat(tr.querySelector('.s-row-total').value || 0)
+                });
+            });
+
+            let invoices = getData('salesInvoices');
+            let invoiceObj = { invoiceNo, date, customer, project, totalAmount, items };
+            if(editIndex === -1) invoices.push(invoiceObj);
+            else { invoices[editIndex] = invoiceObj; editIndexInput.value = '-1'; }
+
+            saveData('salesInvoices', invoices);
+            initSalesInvoiceForm();
+            alert('فاکتور فروش با موفقیت ثبت شد.');
+        }
+
+        function editSalesInvoice(index) {
+            const invoices = getData('salesInvoices');
+            const inv = invoices[index];
+            document.getElementById('salesInvoices-edit-index').value = index;
+            document.getElementById('salesInvoices-invoiceNo').value = inv.invoiceNo;
+            document.getElementById('salesInvoices-date').value = inv.date;
+            document.getElementById('salesInvoices-customer').value = inv.customer;
+            document.getElementById('salesInvoices-project').value = inv.project;
+
+            const tbody = document.getElementById('sales-items-tbody');
+            tbody.innerHTML = '';
+            inv.items.forEach(item => addSalesRow(item));
+            calculateSalesTotal();
+            document.getElementById('salesInvoices-form').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function initGeneralVoucherForm() {
+            document.getElementById('generalVouchers-edit-index').value = '-1';
+            document.getElementById('generalVouchers-form').reset();
+            updateGlobalDocNoField('generalVouchers-no');
+            document.getElementById('voucher-items-tbody').innerHTML = '';
+            addVoucherRow();
+            addVoucherRow();
+            calculateVoucherTotals();
+        }
+
+        function addVoucherRow(rowObj = null) {
+            const tbody = document.getElementById('voucher-items-tbody');
+            const rowCount = tbody.rows.length + 1;
+            const tr = document.createElement('tr');
+
+            const accounts = getData('accountStructures').filter(a => a.level === 'معین');
+            let accOptions = accounts.length > 0 ? '' : '<option value="">ابتدا حساب معین تعریف کنید</option>';
+            accounts.forEach(a => {
+                let selected = (rowObj && rowObj.account === a.title) ? 'selected' : '';
+                accOptions += `<option value="${a.title}" ${selected}>${a.code} - ${a.title}</option>`;
+            });
+
+            const projects = getData('projects');
+            let projOptions = '<option value="-">بدون پروژه</option>';
+            projects.forEach(p => {
+                let selected = (rowObj && rowObj.project === p.name) ? 'selected' : '';
+                projOptions += `<option value="${p.name}" ${selected}>${p.name}</option>`;
+            });
+
+            tr.innerHTML = `
+                <td>${rowCount}</td>
+                <td><select class="v-account" required style="width:100%">${accOptions}</select></td>
+                <td><select class="v-project" style="width:100%">${projOptions}</select></td>
+                <td><input type="text" class="v-desc" value="${rowObj ? rowObj.desc : ''}" style="width:90%"></td>
+                <td><input type="number" class="v-debit" value="${rowObj ? rowObj.debit : 0}" oninput="calculateVoucherTotals()" style="width:90%"></td>
+                <td><input type="number" class="v-credit" value="${rowObj ? rowObj.credit : 0}" oninput="calculateVoucherTotals()" style="width:90%"></td>
+                <td><button type="button" class="btn-action btn-delete" onclick="removeVoucherRow(this)">حذف</button></td>
+            `;
+            tbody.appendChild(tr);
+            calculateVoucherTotals();
+        }
+
+        function removeVoucherRow(btn) {
+            const tbody = document.getElementById('voucher-items-tbody');
+            if(tbody.rows.length <= 2) { alert('سند حداقل باید دو سطر داشته باشد.'); return; }
+            btn.closest('tr').remove();
+            Array.from(tbody.rows).forEach((row, idx) => row.cells[0].innerText = idx + 1);
+            calculateVoucherTotals();
+        }
+
+        function calculateVoucherTotals() {
+            let totalDebit = 0, totalCredit = 0;
+            document.querySelectorAll('.v-debit').forEach(inp => totalDebit += Number(inp.value || 0));
+            document.querySelectorAll('.v-credit').forEach(inp => totalCredit += Number(inp.value || 0));
+
+            document.getElementById('total-debit').innerText = totalDebit.toLocaleString();
+            document.getElementById('total-credit').innerText = totalCredit.toLocaleString();
+
+            const statusSpan = document.getElementById('balance-status');
+            if(totalDebit === totalCredit && totalDebit > 0) {
+                statusSpan.innerText = 'تراز است ✓';
+                statusSpan.style.color = 'green';
+            } else {
+                statusSpan.innerText = 'نامتعادل ✗';
+                statusSpan.style.color = 'red';
+            }
+        }
+
+        function saveGeneralVoucher(event) {
+            event.preventDefault();
+            let totalDebit = 0, totalCredit = 0;
+            document.querySelectorAll('.v-debit').forEach(inp => totalDebit += Number(inp.value || 0));
+            document.querySelectorAll('.v-credit').forEach(inp => totalCredit += Number(inp.value || 0));
+
+            if(totalDebit !== totalCredit || totalDebit === 0) {
+                alert('خطا: سند حسابداری نامتعادل است یا مبلغ صفر دارد.');
+                return;
+            }
+
+            const editIndexInput = document.getElementById('generalVouchers-edit-index');
+            const editIndex = parseInt(editIndexInput.value);
+            const no = document.getElementById('generalVouchers-no').value;
+            const date = document.getElementById('generalVouchers-date').value;
+            const desc = document.getElementById('generalVouchers-desc').value;
+
+            let items = [];
+            document.querySelectorAll('#voucher-items-tbody tr').forEach(tr => {
+                items.push({
+                    account: tr.querySelector('.v-account').value,
+                    project: tr.querySelector('.v-project').value,
+                    desc: tr.querySelector('.v-desc').value,
+                    debit: Number(tr.querySelector('.v-debit').value || 0),
+                    credit: Number(tr.querySelector('.v-credit').value || 0)
+                });
+            });
+
+            let vouchers = getData('generalVouchers');
+            let voucherObj = { no, date, desc, totalAmount: totalDebit, items };
+            if(editIndex === -1) vouchers.push(voucherObj);
+            else { vouchers[editIndex] = voucherObj; editIndexInput.value = '-1'; }
+
+            saveData('generalVouchers', vouchers);
+            initGeneralVoucherForm();
+            renderTable('generalVouchers');
+            alert('سند حسابداری با موفقیت ثبت شد.');
+        }
+
+        function editGeneralVoucher(index) {
+            const vouchers = getData('generalVouchers');
+            const v = vouchers[index];
+            document.getElementById('generalVouchers-edit-index').value = index;
+            document.getElementById('generalVouchers-no').value = v.no;
+            document.getElementById('generalVouchers-date').value = v.date;
+            document.getElementById('generalVouchers-desc').value = v.desc;
+
+            const tbody = document.getElementById('voucher-items-tbody');
+            tbody.innerHTML = '';
+            v.items.forEach(item => addVoucherRow(item));
+            calculateVoucherTotals();
+            document.getElementById('generalVouchers-form').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function togglePersonTypeFields() {
+            const type = document.getElementById('persons-personType').value;
+            document.getElementById('national-id-group').style.display = (type === 'حقیقی') ? 'flex' : 'none';
+            document.getElementById('economic-id-group').style.display = (type === 'حقوقی') ? 'flex' : 'none';
+        }
+
+        function populateCostCenterDropdown() {
+            const select = document.getElementById('personnel-costCenter');
+            if(!select) return;
+            const data = getData('costCenters');
+            select.innerHTML = '';
+            if(data.length === 0) { select.innerHTML = '<option value="">ابتدا مرکز هزینه تعریف کنید</option>'; return; }
+            data.forEach(item => select.innerHTML += `<option value="${item.title}">${item.title} (${item.type})</option>`);
+        }
+
+        function populateReceiveDropdowns() {
+            const destSelect = document.getElementById('receives-destAccount');
+            const payerSelect = document.getElementById('receives-payer');
+            const projSelect = document.getElementById('receives-project');
+            
+            destSelect.innerHTML = '<option value="موجودی نقد / صندوق">موجودی نقد / صندوق</option>';
+            getData('bankAccounts').forEach(b => destSelect.innerHTML += `<option value="${b.bankName}">${b.bankName} (${b.accountNo})</option>`);
+
+            payerSelect.innerHTML = '';
+            getData('persons').forEach(p => payerSelect.innerHTML += `<option value="${p.name}">${p.name} (${p.personType})</option>`);
+
+            projSelect.innerHTML = '<option value="-">انتخاب کنید</option>';
+            getData('projects').forEach(pr => projSelect.innerHTML += `<option value="${pr.name}">${pr.name}</option>`);
+            toggleReceiveType();
+        }
+
+        function toggleReceiveType() {
+            const type = document.getElementById('receives-payType').value;
+            document.getElementById('rec-cheque-group').style.display = (type === 'چک دریافتی') ? 'flex' : 'none';
+            document.getElementById('rec-duedate-group').style.display = (type === 'چک دریافتی') ? 'flex' : 'none';
+        }
+
+        function populatePaymentDropdowns() {
+            const sourceSelect = document.getElementById('payments-sourceAccount');
+            const recvSelect = document.getElementById('payments-receiver');
+            const ccSelect = document.getElementById('payments-costCenter');
+
+            sourceSelect.innerHTML = '<option value="موجودی نقد / صندوق">موجودی نقد / صندوق</option>';
+            getData('bankAccounts').forEach(b => sourceSelect.innerHTML += `<option value="${b.bankName}">${b.bankName} (${b.accountNo})</option>`);
+
+            recvSelect.innerHTML = '';
+            getData('persons').forEach(p => recvSelect.innerHTML += `<option value="${p.name}">${p.name}</option>`);
+            getData('personnel').forEach(pe => recvSelect.innerHTML += `<option value="${pe.name}">پرسنل: ${pe.name}</option>`);
+
+            ccSelect.innerHTML = '';
+            getData('projects').forEach(pr => ccSelect.innerHTML += `<option value="${pr.name}">${pr.name}</option>`);
+            getData('costCenters').forEach(c => ccSelect.innerHTML += `<option value="${c.title}">${c.title}</option>`);
+            togglePaymentType();
+        }
+
+        function togglePaymentType() {
+            const type = document.getElementById('payments-payType').value;
+            document.getElementById('pay-cheque-group').style.display = (type === 'چک پرداختی') ? 'flex' : 'none';
+        }
+
+        function populateExpenseDropdowns() {
+            const projSelect = document.getElementById('expenseVouchers-project');
+            const cpSelect = document.getElementById('expenseVouchers-counterparty');
+
+            projSelect.innerHTML = '';
+            getData('projects').forEach(pr => projSelect.innerHTML += `<option value="${pr.name}">${pr.name}</option>`);
+            cpSelect.innerHTML = '';
+            getData('persons').forEach(p => cpSelect.innerHTML += `<option value="${p.name}">${p.name} (شخص)</option>`);
+            getData('personnel').forEach(pe => cpSelect.innerHTML += `<option value="${pe.name}">${pe.name} (پرسنل)</option>`);
+        }
+
+        function checkCodeUniquenessAndRange(moduleKey, newItem, editIndex) {
+            let codeField = '', minRange = 0, maxRange = 0;
+            if(moduleKey === 'persons') { codeField = 'level4Code'; minRange = 4000; maxRange = 4999; }
+            else if(moduleKey === 'costCenters') { codeField = 'level4Code'; minRange = 6000; maxRange = 6999; }
+            else if(moduleKey === 'personnel') { codeField = 'level4Code'; minRange = 7000; maxRange = 7999; }
+            else if(moduleKey === 'projects') { codeField = 'level5Code'; minRange = 50000; maxRange = 59999; }
+
+            if(!codeField) return true;
+            const codeVal = parseInt(newItem[codeField]);
+            if(codeVal < minRange || codeVal > maxRange) {
+                alert(`خطا: کد وارد شده خارج از محدوده مجاز (${minRange} الی ${maxRange}) است.`);
+                return false;
+            }
+            return true;
+        }
+
+        function renderTable(moduleKey) {
+            const table = document.getElementById(moduleKey + '-table');
+            if(!table) return;
+            const tbody = table.querySelector('tbody');
+            const data = getData(moduleKey);
+            tbody.innerHTML = '';
+
+            if(data.length === 0) {
+                const colCount = table.querySelectorAll('th').length;
+                tbody.innerHTML = `<tr><td colspan="${colCount}" style="color: #888;">اطلاعاتی ثبت نشده است.</td></tr>`;
+                return;
+            }
+
+            if(moduleKey === 'users') {
+                data.forEach((item, index) => {
+                    tbody.innerHTML += `<tr>
+                        <td>${index + 1}</td><td>${item.username}</td><td>${item.fullname}</td><td>${item.accessFinancial}</td><td>${item.accessTreasury}</td><td>${item.accessWarehouse}</td><td>${item.accessReports}</td>
+                        <td><button class="btn-action btn-submit" onclick="loginAsUser(${index})">ورود</button></td>
+                        <td><button class="btn-action btn-edit" onclick="editEntity('${moduleKey}', ${index})">ویرایش</button><button class="btn-action btn-delete" onclick="deleteEntity('${moduleKey}', ${index})">حذف</button></td>
+                    </tr>`;
+                });
+                return;
+            }
+
+            if(moduleKey === 'generalVouchers') {
+                data.forEach((item, index) => {
+                    tbody.innerHTML += `<tr>
+                        <td>${index + 1}</td><td>${item.no}</td><td>${item.date}</td><td>${item.desc}</td><td>${Number(item.totalAmount).toLocaleString()}</td>
+                        <td><button class="btn-action btn-edit" onclick="editGeneralVoucher(${index})">ویرایش</button><button class="btn-action btn-delete" onclick="deleteEntity('${moduleKey}', ${index})">حذف</button></td>
+                    </tr>`;
+                });
+                return;
+            }
+
+            if(moduleKey === 'salesInvoices') {
+                data.forEach((item, index) => {
+                    tbody.innerHTML += `<tr>
+                        <td>${index + 1}</td><td>${item.invoiceNo}</td><td>${item.date}</td><td>${item.customer}</td><td>${item.project}</td><td>${Number(item.totalAmount).toLocaleString()}</td>
+                        <td><button class="btn-action btn-edit" onclick="editSalesInvoice(${index})">ویرایش</button><button class="btn-action btn-delete" onclick="deleteEntity('${moduleKey}', ${index})">حذف</button></td>
+                    </tr>`;
+                });
+                return;
+            }
+
+            data.forEach((item, index) => {
+                let rowHtml = `<td>${index + 1}</td>`;
+                const fields = modulesConfig[moduleKey];
+                fields.forEach(f => {
+                    let val = item[f] || '-';
+                    if(['budget', 'price', 'amount', 'fee', 'area'].includes(f)) {
+                        if(!isNaN(val) && val !== '-') val = Number(val).toLocaleString();
+                    }
+                    rowHtml += `<td>${val}</td>`;
+                });
+                rowHtml += `<td><button class="btn-action btn-edit" onclick="editEntity('${moduleKey}', ${index})">ویرایش</button><button class="btn-action btn-delete" onclick="deleteEntity('${moduleKey}', ${index})">حذف</button></td>`;
+                tbody.innerHTML += `<tr>${rowHtml}</tr>`;
+            });
+        }
+
+        function loginAsUser(index) {
+            const users = getData('users');
+            const u = users[index];
+            localStorage.setItem('currentUser', JSON.stringify(u));
+            applyUserPermissions();
+            alert(`با موفقیت به عنوان کاربر «${u.fullname}» وارد شدید.`);
+            showContent('dashboard', null);
+        }
+
+        function saveUserEntity(event) {
+            event.preventDefault();
+            const editIndex = parseInt(document.getElementById('users-edit-index').value);
+            const newItem = {
+                username: document.getElementById('users-username').value,
+                fullname: document.getElementById('users-fullname').value,
+                accessFinancial: document.getElementById('users-accessFinancial').value,
+                accessTreasury: document.getElementById('users-accessTreasury').value,
+                accessWarehouse: document.getElementById('users-accessWarehouse').value,
+                accessReports: document.getElementById('users-accessReports').value
+            };
+            let users = getData('users');
+            if(editIndex === -1) users.push(newItem);
+            else { users[editIndex] = newItem; document.getElementById('users-edit-index').value = '-1'; }
+            saveData('users', users);
+            document.getElementById('users-form').reset();
+            renderTable('users');
+            alert('اطلاعات کاربر ذخیره شد.');
+        }
+
+        function saveEntity(event, moduleKey) {
+            event.preventDefault();
+            const form = document.getElementById(moduleKey + '-form');
+            const editIndexInput = document.getElementById(moduleKey + '-edit-index');
+            const editIndex = parseInt(editIndexInput.value);
+            const fields = modulesConfig[moduleKey];
+            let newItem = {};
+
+            fields.forEach(f => {
+                const input = form.querySelector(`[id$="-${f}"]`);
+                newItem[f] = input ? input.value : '';
+            });
+
+            if(editIndex === -1) {
+                const nextNo = getNextGlobalDocNumber().toString();
+                if(moduleKey === 'receives') newItem['docNo'] = nextNo;
+                if(moduleKey === 'payments') newItem['docNo'] = nextNo;
+                if(moduleKey === 'expenseVouchers') newItem['no'] = nextNo;
+            }
+
+            if(!checkCodeUniquenessAndRange(moduleKey, newItem, editIndex)) return;
+
+            let data = getData(moduleKey);
+            if(editIndex === -1) data.push(newItem);
+            else { data[editIndex] = newItem; editIndexInput.value = '-1'; }
+
+            saveData(moduleKey, data);
+            form.reset();
+            updateGlobalDocNoField('receives-docNo');
+            updateGlobalDocNoField('payments-docNo');
+            updateGlobalDocNoField('expenseVouchers-no');
+
+            if(moduleKey === 'persons') togglePersonTypeFields();
+            if(moduleKey === 'receive') toggleReceiveType();
+            if(moduleKey === 'payment') togglePaymentType();
+            renderTable(moduleKey);
+            alert('اطلاعات با موفقیت ذخیره شد.');
+        }
+
+        function editEntity(moduleKey, index) {
+            const data = getData(moduleKey);
+            const item = data[index];
+            const form = document.getElementById(moduleKey + '-form');
+            document.getElementById(moduleKey + '-edit-index').value = index;
+            const fields = modulesConfig[moduleKey];
+            fields.forEach(f => {
+                const input = form.querySelector(`[id$="-${f}"]`);
+                if(input) input.value = item[f] || '';
+            });
+            if(moduleKey === 'users') {
+                document.getElementById('users-edit-index').value = index;
+            }
+            if(moduleKey === 'persons') togglePersonTypeFields();
+            if(moduleKey === 'receive') toggleReceiveType();
+            if(moduleKey === 'payment') togglePaymentType();
+            form.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function deleteEntity(moduleKey, index) {
+            if(confirm('آیا از حذف این ردیف اطمینان دارید؟')) {
+                let data = getData(moduleKey);
+                data.splice(index, 1);
+                saveData(moduleKey, data);
+                renderTable(moduleKey);
+            }
+        }
+
+        function printTable(moduleKey) { window.print(); }
+
+        function renderCustomProjectReport() {
+            const tbody = document.querySelector('#custom-project-report-table tbody');
+            tbody.innerHTML = '';
+            const projects = getData('projects');
+            const receives = getData('receives');
+            const expenses = getData('expenseVouchers');
+            const payments = getData('payments');
+
+            if(projects.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" style="color:#888; padding: 20px;">هیچ پروژه‌ای تعریف نشده است.</td></tr>`;
+                return;
+            }
+
+            projects.forEach((pr, idx) => {
+                const pName = pr.name;
+                const area = parseFloat(pr.area || 0);
+                const fee = parseFloat(pr.fee || 0);
+                const budget = parseFloat(pr.budget || 0);
+
+                const totalReceive = receives.filter(r => r.project === pName).reduce((sum, r) => sum + parseFloat(r.amount || 0), 0);
+                const totalExpense = expenses.filter(e => e.project === pName).reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
+                const totalPayment = payments.filter(p => p.costCenter === pName).reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
+
+                tbody.innerHTML += `<tr>
+                    <td>${idx + 1}</td>
+                    <td style="text-align: right; padding-right: 10px;"><b>${pName}</b><br><small style="color:#666;">کارفرما: ${pr.client}</small></td>
+                    <td>${pr.client}</td>
+                    <td>${area.toLocaleString()}</td>
+                    <td>${fee.toLocaleString()}</td>
+                    <td class="clickable-cell" onclick="showProjectDetails('${pName}', 'contract', ${idx})">${budget.toLocaleString()}</td>
+                    <td class="clickable-cell" onclick="showProjectDetails('${pName}', 'receive', ${idx})">${totalReceive.toLocaleString()}</td>
+                    <td class="clickable-cell" onclick="showProjectDetails('${pName}', 'expense', ${idx})">${totalExpense.toLocaleString()}</td>
+                    <td class="clickable-cell" onclick="showProjectDetails('${pName}', 'payment', ${idx})">${totalPayment.toLocaleString()}</td>
+                </tr>`;
+            });
+        }
+
+        function showProjectDetails(projectName, type, projectIndex) {
+            const modal = document.getElementById('detailModal');
+            const titleEl = document.getElementById('modal-title');
+            const bodyEl = document.getElementById('modal-body');
+            modal.style.display = 'block';
+
+            let htmlContent = '';
+            if(type === 'contract') {
+                titleEl.innerText = `ریز اطلاعات و فاکتورهای فروش پروژه: ${projectName}`;
+                const sales = getData('salesInvoices').filter(s => s.project === projectName);
+                const prObj = getData('projects')[projectIndex];
+                
+                htmlContent += `<p><b>مشخصات قرارداد:</b> متراژ: ${Number(prObj.area || 0).toLocaleString()} | فی: ${Number(prObj.fee || 0).toLocaleString()} | کل مبلغ قرارداد: ${Number(prObj.budget || 0).toLocaleString()} ریال</p>`;
+                if(sales.length === 0) {
+                    htmlContent += `<p style="color:#888;">فاکتور فروش مستقیمی صادر نشده است.</p>`;
+                } else {
+                    htmlContent += `<table><thead><tr><th>شماره فاکتور</th><th>تاریخ</th><th>مشتری</th><th>مبلغ کل (ریال)</th></tr></thead><tbody>`;
+                    sales.forEach(s => {
+                        htmlContent += `<tr><td>${s.invoiceNo}</td><td>${s.date}</td><td>${s.customer}</td><td>${Number(s.totalAmount).toLocaleString()}</td></tr>`;
+                    });
+                    htmlContent += `</tbody></table>`;
+                }
+            } else if(type === 'receive') {
+                titleEl.innerText = `ریز دریافتی‌های بابت پروژه: ${projectName}`;
+                const recs = getData('receives').filter(r => r.project === projectName);
+                if(recs.length === 0) {
+                    htmlContent = `<p style="color:#888;">هیچ سند دریافتی ثبت نشده است.</p>`;
+                } else {
+                    htmlContent += `<table><thead><tr><th>شماره سند</th><th>تاریخ</th><th>صندوق/بانک مقصد</th><th>طرف مقابل</th><th>معین</th><th>مبلغ (ریال)</th></tr></thead><tbody>`;
+                    recs.forEach(r => {
+                        htmlContent += `<tr><td>${r.docNo}</td><td>${r.date}</td><td>${r.destAccount}</td><td>${r.payer}</td><td>${r.counterpartyLedger}</td><td>${Number(r.amount).toLocaleString()}</td></tr>`;
+                    });
+                    htmlContent += `</tbody></table>`;
+                }
+            } else if(type === 'expense') {
+                titleEl.innerText = `ریز هزینه‌های انجام‌شده بابت پروژه: ${projectName}`;
+                const exps = getData('expenseVouchers').filter(e => e.project === projectName);
+                if(exps.length === 0) {
+                    htmlContent = `<p style="color:#888;">هیچ سند هزینه‌ای ثبت نشده است.</p>`;
+                } else {
+                    htmlContent += `<table><thead><tr><th>شماره سند</th><th>تاریخ</th><th>نوع هزینه</th><th>طرف مقابل</th><th>مبلغ (ریال)</th><th>شرح</th></tr></thead><tbody>`;
+                    exps.forEach(e => {
+                        htmlContent += `<tr><td>${e.no}</td><td>${e.date}</td><td>${e.type}</td><td>${e.counterparty}</td><td>${Number(e.amount).toLocaleString()}</td><td>${e.desc || '-'}</td></tr>`;
+                    });
+                    htmlContent += `</tbody></table>`;
+                }
+            } else if(type === 'payment') {
+                titleEl.innerText = `ریز پرداختی‌های خزانه بابت پروژه: ${projectName}`;
+                const pays = getData('payments').filter(p => p.costCenter === projectName);
+                if(pays.length === 0) {
+                    htmlContent = `<p style="color:#888;">هیچ سند پرداختی ثبت نشده است.</p>`;
+                } else {
+                    htmlContent += `<table><thead><tr><th>شماره سند</th><th>تاریخ</th><th>صندوق/بانک مبدا</th><th>دریافت‌کننده</th><th>معین بدهکار</th><th>مبلغ (ریال)</th></tr></thead><tbody>`;
+                    pays.forEach(p => {
+                        htmlContent += `<tr><td>${p.docNo}</td><td>${p.date}</td><td>${p.sourceAccount}</td><td>${p.receiver}</td><td>${p.counterpartyLedger}</td><td>${Number(p.amount).toLocaleString()}</td></tr>`;
+                    });
+                    htmlContent += `</tbody></table>`;
+                }
+            }
+            bodyEl.innerHTML = htmlContent;
+        }
+
+        function closeModal() {
+            document.getElementById('detailModal').style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('detailModal');
+            if (event.target === modal) modal.style.display = 'none';
+        }
+
+        function renderRahkaranReview() {
+            renderRahkaranTree();
+            renderRahkaranTable('کل سیستم / همه پروژه‌ها');
+        }
+
+        function renderRahkaranTree() {
+            const rootUl = document.getElementById('rahkaran-tree-root');
+            rootUl.innerHTML = '';
+            
+            let allLi = document.createElement('li');
+            allLi.className = 'tree-node open';
+            allLi.innerHTML = `<div class="tree-item-content" onclick="renderRahkaranTable('کل سیستم / همه پروژه‌ها')">🌐 <b>کل سیستم و اسناد</b></div>`;
+            rootUl.appendChild(allLi);
+
+            const projects = getData('projects');
+            if(projects.length > 0) {
+                let projLi = document.createElement('li');
+                projLi.className = 'tree-node open';
+                let projContent = document.createElement('div');
+                projContent.className = 'tree-item-content';
+                projContent.innerHTML = `<span class="toggle-icon" onclick="toggleTreeNode(this, event)">[-]</span> 🏗️ <b>پروژه‌های پیمانکاری</b>`;
+                projLi.appendChild(projContent);
+
+                let projUl = document.createElement('ul');
+                projects.forEach(p => {
+                    let pLi = document.createElement('li');
+                    pLi.className = 'tree-node';
+                    pLi.innerHTML = `<div class="tree-item-content" onclick="renderRahkaranTable('${p.name}')">📁 ${p.name} (کارفرما: ${p.client})</div>`;
+                    projUl.appendChild(pLi);
+                });
+                projLi.appendChild(projUl);
+                rootUl.appendChild(projLi);
+            }
+
+            const accounts = getData('accountStructures').filter(a => a.level === 'معین');
+            if(accounts.length > 0) {
+                let accLi = document.createElement('li');
+                accLi.className = 'tree-node open';
+                let accContent = document.createElement('div');
+                accContent.className = 'tree-item-content';
+                accContent.innerHTML = `<span class="toggle-icon" onclick="toggleTreeNode(this, event)">[-]</span> 📊 <b>حساب‌های معین</b>`;
+                accLi.appendChild(accContent);
+
+                let accUl = document.createElement('ul');
+                accounts.forEach(a => {
+                    let aLi = document.createElement('li');
+                    aLi.className = 'tree-node';
+                    aLi.innerHTML = `<div class="tree-item-content" onclick="renderRahkaranTable('${a.title}')">📄 ${a.code} - ${a.title}</div>`;
+                    accUl.appendChild(aLi);
+                });
+                accLi.appendChild(accUl);
+                rootUl.appendChild(accLi);
+            }
+        }
+
+        function renderRahkaranTable(targetFilter) {
+            document.getElementById('selected-account-label').innerText = `حساب / پروژه انتخابی: ${targetFilter}`;
+            const tbody = document.getElementById('rahkaran-review-tbody');
+            tbody.innerHTML = '';
+
+            let reviewData = [];
+            let expenseVouchers = getData('expenseVouchers');
+            let salesInvoices = getData('salesInvoices');
+
+            if(targetFilter === 'کل سیستم / همه پروژه‌ها') {
+                let projects = getData('projects');
+                projects.forEach(pr => {
+                    let pExpense = expenseVouchers.filter(e => e.project === pr.name).reduce((sum, c) => sum + Number(c.amount || 0), 0);
+                    let pSales = salesInvoices.filter(s => s.project === pr.name).reduce((sum, c) => sum + Number(c.totalAmount || 0), 0);
+                    
+                    reviewData.push({
+                        title: `پروژه: ${pr.name} (کارفرما: ${pr.client})`,
+                        code: pr.level5Code || '50000',
+                        debitTurnover: pExpense,
+                        creditTurnover: pSales,
+                        debitBalance: pExpense > pSales ? (pExpense - pSales) : 0,
+                        creditBalance: pSales > pExpense ? (pSales - pExpense) : 0
+                    });
+                });
+            } else {
+                let filteredExpenses = expenseVouchers.filter(e => e.project === targetFilter || e.type === targetFilter);
+                let filteredSales = salesInvoices.filter(s => s.project === targetFilter || s.customer === targetFilter);
+                let dTurn = filteredExpenses.reduce((sum, c) => sum + Number(c.amount || 0), 0);
+                let cTurn = filteredSales.reduce((sum, c) => sum + Number(c.totalAmount || 0), 0);
+
+                reviewData.push({
+                    title: `گردش حساب / پروژه: ${targetFilter}`,
+                    code: 'معین-تخصصی',
+                    debitTurnover: dTurn,
+                    creditTurnover: cTurn,
+                    debitBalance: dTurn > cTurn ? (dTurn - cTurn) : 0,
+                    creditBalance: cTurn > dTurn ? (cTurn - dTurn) : 0
+                });
+            }
+
+            if(reviewData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" style="color: #888; padding: 15px;">گردشی یافت نشد.</td></tr>`;
+                return;
+            }
+
+            reviewData.forEach((row, idx) => {
+                tbody.innerHTML += `<tr>
+                    <td>${idx + 1}</td>
+                    <td style="text-align: right; padding-right: 10px;"><b>${row.title}</b></td>
+                    <td>${row.code}</td>
+                    <td>${row.debitTurnover.toLocaleString()}</td>
+                    <td>${row.creditTurnover.toLocaleString()}</td>
+                    <td style="color: ${row.debitBalance > 0 ? '#007bff' : '#333'};">${row.debitBalance.toLocaleString()}</td>
+                    <td style="color: ${row.creditBalance > 0 ? '#28a745' : '#333'};">${row.creditBalance.toLocaleString()}</td>
+                </tr>`;
+            });
+        }
+
+        function applyRahkaranFilter() {
+            alert('فیلتر اعمال شد.');
+            initRahkaranReview();
+        }
+
+        function renderTrialBalance() {
+            const tbody = document.querySelector('#trial-balance-table tbody');
+            tbody.innerHTML = '';
+            const mods = [
+                {key: 'receives', name: 'اسناد دریافت (خزانه)'}, 
+                {key: 'payments', name: 'اسناد پرداخت (خزانه)'}, 
+                {key: 'expenseVouchers', name: 'سند هزینه‌های کارگاه'}, 
+                {key: 'salesInvoices', name: 'فاکتورهای فروش'},
+                {key: 'generalVouchers', name: 'اسناد حسابداری عمومی'}
+            ];
+            mods.forEach((m, idx) => {
+                const d = getData(m.key);
+                let sum = d.reduce((acc, curr) => acc + Number(curr.amount || curr.totalAmount || 0), 0);
+                tbody.innerHTML += `<tr><td>${idx+1}</td><td>${m.name}</td><td>${d.length} سند</td><td>${sum.toLocaleString()} ریال</td></tr>`;
+            });
+        }
+
+        function renderProjectReport() {
+            const tbody = document.querySelector('#project-report-table tbody');
+            tbody.innerHTML = '';
+            const projects = getData('projects');
+            const expenses = getData('expenseVouchers');
+
+            if(projects.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" style="color:#888;">پروژه‌ای تعریف نشده است.</td></tr>`;
+                return;
+            }
+
+            projects.forEach((pr, idx) => {
+                let contractBudget = Number(pr.budget || 0);
+                let projectExpenses = expenses.filter(e => e.project === pr.name).reduce((sum, curr) => sum + Number(curr.amount || 0), 0);
+                let grossProfit = contractBudget - projectExpenses;
+                let statusColor = grossProfit >= 0 ? 'green' : 'red';
+                let statusText = grossProfit >= 0 ? 'سوده ✓' : 'زیان ✗';
+
+                tbody.innerHTML += `<tr>
+                    <td>${idx + 1}</td>
+                    <td><b>${pr.name}</b></td>
+                    <td>${pr.client}</td>
+                    <td>${contractBudget.toLocaleString()}</td>
+                    <td>${projectExpenses.toLocaleString()}</td>
+                    <td style="color: ${statusColor}; font-weight: bold;">${grossProfit.toLocaleString()}</td>
+                    <td><span style="color: ${statusColor};">${statusText}</span></td>
+                </tr>`;
+            });
+        }
+
+        function renderTreasuryReport() {
+            const tbody = document.querySelector('#treasury-report-table tbody');
+            tbody.innerHTML = '';
+            
+            let accountsList = [{type: 'صندوق', name: 'موجودی نقد / صندوق'}];
+            getData('bankAccounts').forEach(b => {
+                accountsList.push({type: 'بانک (سطح ۴)', name: b.bankName});
+            });
+
+            const receives = getData('receives');
+            const payments = getData('payments');
+
+            accountsList.forEach((acc, idx) => {
+                let totalRec = receives.filter(r => r.destAccount === acc.name).reduce((sum, r) => sum + Number(r.amount || 0), 0);
+                let totalPay = payments.filter(p => p.sourceAccount === acc.name).reduce((sum, p) => sum + Number(p.amount || 0), 0);
+                let balance = totalRec - totalPay;
+
+                tbody.innerHTML += `<tr>
+                    <td>${idx + 1}</td>
+                    <td><b>${acc.type}</b></td>
+                    <td class="clickable-cell" onclick="showTreasuryDetails('${acc.name}')">${acc.name}</td>
+                    <td>${totalRec.toLocaleString()}</td>
+                    <td>${totalPay.toLocaleString()}</td>
+                    <td style="font-weight: bold; color: ${balance >= 0 ? '#007bff' : '#dc3545'};">${balance.toLocaleString()} ریال</td>
+                </tr>`;
+            });
+        }
+
+        function showTreasuryDetails(accountName) {
+            const modal = document.getElementById('detailModal');
+            const titleEl = document.getElementById('modal-title');
+            const bodyEl = document.getElementById('modal-body');
+            modal.style.display = 'block';
+
+            titleEl.innerText = `ریز گردش صندوق / بانک: ${accountName}`;
+            const receives = getData('receives').filter(r => r.destAccount === accountName);
+            const payments = getData('payments').filter(p => p.sourceAccount === accountName);
+
+            let htmlContent = `<h4 style="margin:5px 0; color:#28a745;">واریزها / دریافت‌ها (بدهکار)</h4>`;
+            if(receives.length === 0) htmlContent += `<p style="color:#888;">تراکنشی ثبت نشده است.</p>`;
+            else {
+                htmlContent += `<table><thead><tr><th>شماره سند</th><th>تاریخ</th><th>طرف مقابل</th><th>معین</th><th>مبلغ (ریال)</th></tr></thead><tbody>`;
+                receives.forEach(r => htmlContent += `<tr><td>${r.docNo}</td><td>${r.date}</td><td>${r.payer}</td><td>${r.counterpartyLedger}</td><td>${Number(r.amount).toLocaleString()}</td></tr>`);
+                htmlContent += `</tbody></table>`;
+            }
+
+            htmlContent += `<h4 style="margin:15px 0 5px 0; color:#dc3545;">برداشت‌ها / پرداخت‌ها (بستانکار)</h4>`;
+            if(payments.length === 0) htmlContent += `<p style="color:#888;">تراکنشی ثبت نشده است.</p>`;
+            else {
+                htmlContent += `<table><thead><tr><th>شماره سند</th><th>تاریخ</th><th>دریافت‌کننده</th><th>معین بدهکار</th><th>مبلغ (ریال)</th></tr></thead><tbody>`;
+                payments.forEach(p => htmlContent += `<tr><td>${p.docNo}</td><td>${p.date}</td><td>${p.receiver}</td><td>${p.counterpartyLedger}</td><td>${Number(p.amount).toLocaleString()}</td></tr>`);
+                htmlContent += `</tbody></table>`;
+            }
+
+            bodyEl.innerHTML = htmlContent;
+        }
+
+        function renderWarehouseCardex() {
+            const tbody = document.querySelector('#warehouse-cardex-table tbody');
+            tbody.innerHTML = '';
+            let rows = [];
+            getData('purchases').forEach(i => rows.push({type: 'خرید (ورود به انبار)', item: i.item, qty: i.qty, ref: i.supplier}));
+            getData('consumptions').forEach(i => rows.push({type: 'حواله مصرف (خروج از انبار)', item: i.item, qty: i.qty, ref: i.dept}));
+            if(rows.length === 0) { tbody.innerHTML = `<tr><td colspan="5" style="color:#888;">گردش انبار ثبت نشده است.</td></tr>`; return; }
+            rows.forEach((r, idx) => { tbody.innerHTML += `<tr><td>${idx+1}</td><td>${r.type}</td><td>${r.item}</td><td>${r.qty}</td><td>${r.ref}</td></tr>`; });
+        }
+
+        Object.keys(modulesConfig).forEach(m => renderTable(m));
+        renderTable('generalVouchers');
+        renderTable('salesInvoices');
+        renderTable('users');
+        populateCostCenterDropdown();
+        populateReceiveDropdowns();
+        populatePaymentDropdowns();
+        populateExpenseDropdowns();
+        updateGlobalDocNoField('receives-docNo');
+        updateGlobalDocNoField('payments-docNo');
+        updateGlobalDocNoField('generalVouchers-no');
+        updateGlobalDocNoField('expenseVouchers-no');
+        updateGlobalDocNoField('salesInvoices-invoiceNo');
+        
+        applyUserPermissions();
+        initDashboard();
+    </script>
+</body>
+</html>
